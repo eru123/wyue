@@ -1,6 +1,6 @@
 {
     "name": "eru123/wyue",
-    "description": "PHP Framework for developing Vite.js application with built-in REST API",
+    "description": "Framework for developing Vite.js application with built-in PHP-based REST API",
     "type": "library",
     "license": "Apache-2.0",
     "autoload": {
