@@ -54,7 +54,6 @@ class Route
         return $this;
     }
 
-
     /**
      * Get the request parameters
      * @param array|null $key Magic array key
@@ -190,19 +189,19 @@ class Route
                     }
                 }
             } catch (Throwable $e) {
-                if ($this->errorHandler) {
-                    $res = $this->ErrorHandler()($routeContext, $e);
+                if ($routeContext->errorHandler) {
+                    $res = $routeContext->ErrorHandler()($routeContext, $e);
                 } else {
-                    $res = $this->defaultErrorHandler($routeContext, $e);
+                    $res = $routeContext->defaultErrorHandler($routeContext, $e);
                 }
             }
 
             if ($res) {
-                if ($this->responseHandler) {
-                    $res = $this->ResponseHandler()($routeContext, $res);
+                if ($routeContext->responseHandler) {
+                    $res = $routeContext->ResponseHandler()($routeContext, $res);
                 }
 
-                return $this->defaultResponseHandler($routeContext, $res);
+                return $routeContext->defaultResponseHandler($routeContext, $res);
             }
         }
 
@@ -275,5 +274,75 @@ class Route
         }
 
         exit;
+    }
+
+    /**
+     * Create a GET Request Route
+     * @param string $path
+     * @param mixed ...$cb
+     * @return Route
+     */
+    public function Get(string $path, ...$cb)
+    {
+        if (strtoupper($_SERVER['REQUEST_METHOD']) !== 'GET') {
+            return $this;
+        }
+        return $this->route($path, $cb, 'GET');
+    }
+
+    /**
+     * Create a POST Request Route
+     * @param string $path
+     * @param mixed ...$cb
+     * @return Route
+     */
+    public function Post(string $path, ...$cb)
+    {
+        if (strtoupper($_SERVER['REQUEST_METHOD']) !== 'POST') {
+            return $this;
+        }
+        return $this->route($path, $cb, 'POST');
+    }
+
+    /**
+     * Create a PUT Request Route
+     * @param string $path
+     * @param mixed ...$cb
+     * @return Route
+     */
+    public function Put(string $path, ...$cb)
+    {
+        if (strtoupper($_SERVER['REQUEST_METHOD']) !== 'PUT') {
+            return $this;
+        }
+        return $this->route($path, $cb, 'PUT');
+    }
+
+    /**
+     * Create a PATCH Request Route
+     * @param string $path
+     * @param mixed ...$cb
+     * @return Route
+     */
+    public function Patch(string $path, ...$cb)
+    {
+        if (strtoupper($_SERVER['REQUEST_METHOD']) !== 'PATCH') {
+            return $this;
+        }
+        return $this->route($path, $cb, 'PATCH');
+    }
+
+    /**
+     * Create a DELETE Request Route
+     * @param string $path
+     * @param mixed ...$cb
+     * @return Route
+     */
+    public function Delete(string $path, ...$cb)
+    {
+        if (strtoupper($_SERVER['REQUEST_METHOD']) !== 'DELETE') {
+            return $this;
+        }
+        return $this->route($path, $cb, 'DELETE');
     }
 }
