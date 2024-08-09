@@ -1,8 +1,8 @@
-# wyue
+# Wyue
 
-PHP Framework for developing Vite.js application with built-in REST API
+Framework for developing Vite.js application with built-in PHP-based REST API
 
-# Features
+On my recent projects, I've developed different applications using PHP as API and Vue 3 with Vite on the frontend, I successfully combined these technologies into a single project, even worked with Hot Module Replacement (HMR) for development, and added meta data to my Vue application for better Search Engine Optimization (SEO). When I'm starting new projects, I copied the codes from the previous project and use it as my boiler plate, then added new features and functionalities, then I also update the other old project for bug fixes and add the new features from other projects, that's kind of a mess on my part and exhausting, so I decided to create this framework to make my life easier and more organized. As this project helps me build my projects, I hope someone can use it too and give it a try, if you like it you can also leave a star or fund this project, I would also appreciate any feedback.
 
 ## Routing
 
