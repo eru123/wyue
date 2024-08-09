@@ -1,0 +1,19 @@
+{
+    "name": "eru123/wyue",
+    "description": "PHP Framework for developing Vite.js application with built-in REST API",
+    "type": "library",
+    "license": "Apache-2.0",
+    "autoload": {
+        "psr-4": {
+            "Wyue\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "eru123",
+            "email": "yeoligoakino@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}
