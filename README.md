@@ -23,6 +23,7 @@ $handler = function (Route $context, $result = null) {
 ```
 
 For the response, you can set the [http response status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) using `code` method
+
 ```php
 $handler = function (Route $context, $result = null) {
     $context->code(202);
@@ -71,4 +72,28 @@ Using `Route` method allows you to process routes without restiction on request 
 $route = new Route();
 $route->Get('/api/user', $analyticsHandler, $apiHandler);
 $route->Post('/api/user', $analyticsHandler, $authHandler, $apiHandler);
+```
+
+If you are used with Laravel or Codeigniter, they have some magic to call route handler functions, I somehow implemented their way of calling its route handler functions.
+
+```php
+class AuthController {
+    public function login(Route $context, $result = null) {
+        // process login here
+    }
+
+    // ...
+}
+
+function loginFunction(Route $context, $result = null) {
+    // process login here
+}
+
+// Different ways to call route handler functions
+$auth = new AuthController();
+$route->Post('/login', [$auth, 'login']);
+$route->Post('/login', [AuthController::class, 'login']);
+$route->Post('/login', 'AuthController@login');
+$route->Post('/login', 'AuthController::login');
+$route->Post('/login', 'loginFunction');
 ```
