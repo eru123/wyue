@@ -116,3 +116,32 @@ $route->Get('/api/user/{id}', 'UserController::user');
 $route->Get('/api/user/$id', 'UserController::user');
 $route->Get('/api/user/:id', 'UserController::user');
 ```
+
+If you want something more complex ways of defining your Routes, try nested routes by creating a new Route inside the handler function
+```php
+
+$route->Route('/api', function (Route $route) {
+    $route->Route('/user/$id', function (Route $route) {
+        $route->Delete('/delete', function (Route $route) {
+            // delete user
+        })
+
+        $route->Put('/update', function (Route $route) {
+            // update user
+        })
+
+        return [
+            // ... user details
+        ];
+    });
+
+    $route->Get('/users', function (Route $route) {
+        // list users
+    });
+
+    return [
+        // ... fallback
+    ];
+})
+
+```
