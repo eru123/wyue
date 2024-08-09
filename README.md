@@ -91,9 +91,28 @@ function loginFunction(Route $context, $result = null) {
 
 // Different ways to call route handler functions
 $auth = new AuthController();
-$route->Post('/login', [$auth, 'login']);
+$route->Post('/login', [$auth, 'login']); // I believe this is the most recommended way for performance reasons
 $route->Post('/login', [AuthController::class, 'login']);
 $route->Post('/login', 'AuthController@login');
 $route->Post('/login', 'AuthController::login');
 $route->Post('/login', 'loginFunction');
+```
+
+With Wyue, you can also define a url parameters in different ways and get it's value from the context with `Params` method
+
+```php
+// actual url path: /api/user/1
+
+class UserController {
+    public function user(Route $context, $result = null) {
+        // process user here
+        $id = $context->Params('id', 'default value if id not exist in url');
+        // or 
+        $id = $context->Params()['id'];
+    }
+}
+
+$route->Get('/api/user/{id}', 'UserController::user');
+$route->Get('/api/user/$id', 'UserController::user');
+$route->Get('/api/user/:id', 'UserController::user');
 ```
