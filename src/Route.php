@@ -3,6 +3,7 @@
 namespace Wyue;
 
 use Throwable;
+use Wyue\Exceptions\ApiException;
 
 /**
  * Wyue Route class
@@ -188,6 +189,13 @@ class Route
                         break;
                     }
                 }
+            } catch (ApiException $e) {
+                $this->code($e->getCode());
+                if ($routeContext->errorHandler) {
+                    $res = $routeContext->ErrorHandler()($routeContext, $e);
+                } else {
+                    $res = $routeContext->defaultErrorHandler($routeContext, $e);
+                }
             } catch (Throwable $e) {
                 if ($routeContext->errorHandler) {
                     $res = $routeContext->ErrorHandler()($routeContext, $e);
@@ -215,7 +223,11 @@ class Route
      */
     public function code(int $httpCode = 200)
     {
-        $this->httpCode = $httpCode;
+        $http_code = preg_match('/^[1-5][0-9][0-9]$/', (string) $httpCode) ? (int) $httpCode : 500;
+        if (intval($http_code) <= 0) {
+            $http_code = 500;
+        }
+        $this->httpCode = $http_code;
         return $this;
     }
 
