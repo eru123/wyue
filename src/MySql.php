@@ -496,6 +496,8 @@ class MySql
         if (!static::$pdo) {
             static::$pdo = static::connect($options);
         }
+
+        return static::$pdo;
     }
 
     public function lastError()
