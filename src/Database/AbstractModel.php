@@ -9,6 +9,9 @@ use PDO;
 
 abstract class AbstractModel
 {
+    
+    use MySqlTraits;
+
     /**
      * @var string The table name for this model
      */

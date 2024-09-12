@@ -3,10 +3,13 @@
 namespace Wyue\Database;
 
 use Exception;
+use InvalidArgumentException;
 use PDO;
 use ReflectionClass;
 
 abstract class AbstractMigration {
+
+    use MySqlTraits;
 
     protected ?PDO $pdo;
     protected bool $dryrun;
@@ -36,7 +39,7 @@ abstract class AbstractMigration {
 
         $pattern = preg_match('/^([0-9]+)_([a-zA-Z0-9_]+)?\.php$/i', $path, $matches);
         if (!$pattern) {
-            throw new Exception('Invalid migration file name format');
+            throw new InvalidArgumentException('Invalid migration format');
         }
 
         return strval($matches[1]);
