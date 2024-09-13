@@ -102,7 +102,7 @@ abstract class AbstractModel
      * @return array<MySql>
      * @throws Exception
      */
-    public function find_many(string|array|MySql $query = [], $history = false): array {
+    public function findMany(string|array|MySql $query = [], $history = false): array {
         return array_map(fn($row) => new static($row), MySql::select($this->table, $query)->exec($history)?->fetchAll(PDO::FETCH_ASSOC) ?: []);
     }
 
@@ -139,7 +139,7 @@ abstract class AbstractModel
      * @return int The number of rows inserted
      * @throws Exception
      */
-    public function insert_many(array $data): int
+    public function insertMany(array $data): int
     {
         foreach ($data as &$row) {
             if (!empty($this->fillable)) {
@@ -191,7 +191,7 @@ abstract class AbstractModel
      * @return bool
      * @throws Exception
      */
-    public function has_column(string $column): bool
+    public function hasColumn(string $column): bool
     {
         return MySql::raw("SHOW COLUMNS FROM {$this->table} LIKE '{$column}'")->exec()?->rowCount() > 0;
     }
