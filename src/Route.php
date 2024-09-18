@@ -357,4 +357,14 @@ class Route
         }
         return $this->Route($path, $cb, 'DELETE');
     }
+
+    /**
+     * Create a Fallback Route
+     * @param mixed ...$cb
+     * @return Route
+     */
+    public function Fallback(...$cb)
+    {
+        return $this->Route('', ...$cb);
+    }
 }
