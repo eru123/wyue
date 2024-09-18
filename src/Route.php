@@ -3,13 +3,17 @@
 namespace Wyue;
 
 use Throwable;
+use Wyue\Venv;
 use Wyue\Exceptions\ApiException;
+use Wyue\Controllers\FileStream;
 
 /**
  * Wyue Route class
  */
 class Route
 {
+    use FileStream;
+
     private array $middlewares = [];
     private array $urlParameters = [];
     private string $parentRoute = "/";
@@ -62,7 +66,7 @@ class Route
      */
     public function Params(?string $key = null)
     {
-        return $this->urlParameters;
+        return Venv::_get($this->urlParameters, $key);
     }
 
     /**
@@ -158,7 +162,7 @@ class Route
      */
     public function Route(string $path, ...$cb): Route
     {
-        $rgxSuffix = "\/?(.*)?$/";
+        $rgxSuffix = "\/?(?P<resource>.*)?$/";
         $cpath = Helper::CombineUrlPaths($this->parentRoute, $path);
         if (substr($cpath, -1) == "$") {
             $cpath = substr($cpath, 0, -1);
@@ -365,6 +369,36 @@ class Route
      */
     public function Fallback(...$cb)
     {
-        return $this->Route('', ...$cb);
+        return $this->Route('/', ...$cb);
+    }
+
+    /**
+     * Expose Static Files
+     * @param string $path
+     * @param string $dir
+     * @return Route
+     */
+    public function Static(string $path, string $dir, ...$cb)
+    {
+        $get_resource = function (self $ctx) use ($dir) {
+            $rsrc = strval($ctx->Params("resource"));
+            $fpath = realpath(rtrim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($rsrc, DIRECTORY_SEPARATOR));
+            if (empty($rsrc) || !$fpath || !is_file($fpath)) {
+                return false;
+            }
+            return $fpath;
+        };
+
+        $cb[] = function (self $ctx, $fpath) {
+            if (realpath($fpath) && is_file($fpath)) {
+                $ctx->streamFile($fpath);
+                exit(0);
+            }
+
+            http_response_code(404);
+            exit(1);
+        };
+
+        return $this->Route($path, $get_resource, ...$cb);
     }
 }
