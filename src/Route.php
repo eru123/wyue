@@ -299,7 +299,7 @@ class Route
         if (strtoupper($_SERVER['REQUEST_METHOD']) !== 'GET') {
             return $this;
         }
-        return $this->route($path, $cb, 'GET');
+        return $this->Route($path, $cb, 'GET');
     }
 
     /**
@@ -313,7 +313,7 @@ class Route
         if (strtoupper($_SERVER['REQUEST_METHOD']) !== 'POST') {
             return $this;
         }
-        return $this->route($path, $cb, 'POST');
+        return $this->Route($path, $cb, 'POST');
     }
 
     /**
@@ -327,7 +327,7 @@ class Route
         if (strtoupper($_SERVER['REQUEST_METHOD']) !== 'PUT') {
             return $this;
         }
-        return $this->route($path, $cb, 'PUT');
+        return $this->Route($path, $cb, 'PUT');
     }
 
     /**
@@ -341,7 +341,7 @@ class Route
         if (strtoupper($_SERVER['REQUEST_METHOD']) !== 'PATCH') {
             return $this;
         }
-        return $this->route($path, $cb, 'PATCH');
+        return $this->Route($path, $cb, 'PATCH');
     }
 
     /**
@@ -355,6 +355,6 @@ class Route
         if (strtoupper($_SERVER['REQUEST_METHOD']) !== 'DELETE') {
             return $this;
         }
-        return $this->route($path, $cb, 'DELETE');
+        return $this->Route($path, $cb, 'DELETE');
     }
 }
