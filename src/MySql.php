@@ -14,7 +14,6 @@ class MySql
      */
     protected static $pdo = null;
 
-
     /**
      * @var PDOStatement
      */
@@ -24,7 +23,7 @@ class MySql
 
     protected static $history = [];
     protected static $columns = [];
-    protected static $pdo_opts = null;
+    protected static $my_config = null;
 
     public function __construct(protected string $sql, protected array $params = [])
     {
@@ -160,6 +159,16 @@ class MySql
     static function is_array($value)
     {
         return array_keys($value) === range(0, count($value) - 1);
+    }
+
+    public static function getMigrationsPath(string $default = null)
+    {
+        return static::array_get(static::$my_config, ['migrations_path', 'migration_path', 'migrations', 'migration'], $default);
+    }
+
+    public static function getSeedsPath(string $default = null)
+    {
+        return static::array_get(static::$my_config, ['seeds_path', 'seed_path', 'seeders_path', 'seeder_path', 'seeder', 'seeds'], $default);
     }
 
     public function __toString(): string
@@ -471,13 +480,13 @@ class MySql
 
     public static function connect(?array $options = null)
     {
-        $driver = static::array_get(static::$pdo_opts, ['driver', 'dbdriver', 'db_driver'], 'mysql');
-        $host = static::array_get(static::$pdo_opts, ['host', 'dbhost', 'db_host'], 'localhost');
-        $port = static::array_get(static::$pdo_opts, ['port', 'dbport', 'db_port'], 3306);
-        $dbname = static::array_get(static::$pdo_opts, ['dbname', 'db_name', 'name', 'db']);
-        $username = static::array_get(static::$pdo_opts, ['username', 'user', 'dbuser', 'db_user']);
-        $password = static::array_get(static::$pdo_opts, ['password', 'pass', 'dbpass', 'db_pass']);
-        $options = is_null($options) ? static::array_get(static::$pdo_opts, ['options', 'pdo_options', 'pdo_opts']) : $options;
+        $driver = static::array_get(static::$my_config, ['driver', 'dbdriver', 'db_driver'], 'mysql');
+        $host = static::array_get(static::$my_config, ['host', 'dbhost', 'db_host'], 'localhost');
+        $port = static::array_get(static::$my_config, ['port', 'dbport', 'db_port'], 3306);
+        $dbname = static::array_get(static::$my_config, ['dbname', 'db_name', 'name', 'db']);
+        $username = static::array_get(static::$my_config, ['username', 'user', 'dbuser', 'db_user']);
+        $password = static::array_get(static::$my_config, ['password', 'pass', 'dbpass', 'db_pass']);
+        $options = is_null($options) ? static::array_get(static::$my_config, ['options', 'pdo_options', 'pdo_opts']) : $options;
         $dsn = "{$driver}:host={$host};port={$port};";
         if ($dbname) {
             $dsn .= "dbname={$dbname};";
@@ -497,11 +506,11 @@ class MySql
      *      options: array,
      *      migrations_path: string,
      *      seeds_path: string
-     * } $pdo_opts Configuration array
+     * } $config Configuration array
      */
-    public static function set_config(array $pdo_opts)
+    public static function set_config(array $config)
     {
-        static::$pdo_opts = $pdo_opts;
+        static::$my_config = $config;
     }
 
     public static function pdo(?array $options = null)
