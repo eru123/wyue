@@ -4,18 +4,29 @@ namespace Wyue\Commands;
 
 use Exception;
 use Throwable;
-use Wyue\Venv;
+use Wyue\Exceptions\InvalidCommandException;
 
 class CLI
 {
     use IO;
 
+    const COLOR_BLACK = "\e[30m";
     const COLOR_RED = "\e[31m";
     const COLOR_GREEN = "\e[32m";
     const COLOR_YELLOW = "\e[33m";
     const COLOR_BLUE = "\e[34m";
     const COLOR_MAGENTA = "\e[35m";
     const COLOR_CYAN = "\e[36m";
+    const COLOR_WHITE = "\e[37m";
+    const COLOR_BRIGHT_BLACK = "\e[90m";
+    const COLOR_BRIGHT_RED = "\e[91m";
+    const COLOR_BRIGHT_GREEN = "\e[92m";
+    const COLOR_BRIGHT_YELLOW = "\e[93m";
+    const COLOR_BRIGHT_BLUE = "\e[94m";
+    const COLOR_BRIGHT_MAGENTA = "\e[95m";
+    const COLOR_BRIGHT_CYAN = "\e[96m";
+    const COLOR_BRIGHT_WHITE = "\e[97m";
+    const COLOR_DEFAULT = "\e[39m";
     const COLOR_RESET = "\e[0m";
 
     /**
@@ -60,7 +71,7 @@ class CLI
     {
         $name = static::getEntryName();
         if (empty($name) || !isset(static::$intances[$name])) {
-            throw new Exception('Command \'' . implode(' ', static::args()) . '\' is not a registered command.');
+            throw new InvalidCommandException('Command \'' . implode(' ', static::args()) . '\' is not a registered command.');
         }
 
         return static::$intances[$name];
@@ -106,6 +117,19 @@ class CLI
         }
     }
 
+    /**
+     * Display the Help manual
+     * @return void
+     */
+    public static function help()
+    {
+
+    }
+
+    /**
+     * Start the CLI handler
+     * @return void
+     */
     public static function listen()
     {
         try {
@@ -116,6 +140,10 @@ class CLI
 
             static::getEntryInstance()->handle();
             exit(0);
+        } catch (InvalidCommandException $e) {
+            static::error($e->getMessage());
+            static::help();
+            exit(1);
         } catch (Throwable $e) {
             static::error($e->getMessage());
             exit(1);
