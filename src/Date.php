@@ -2,6 +2,7 @@
 
 namespace Wyue;
 
+use DateTime;
 use Exception;
 
 define('DATE_TYPE_UNIT', 0);
@@ -143,14 +144,16 @@ class Date
             'ly' => 31622400000,
         ];
 
+        $dt = new DateTime();
+
         if (isset($opts[$out]) && $type === DATE_TYPE_UNIT) {
             return $ms / $opts[$out];
         } else if ($out == "datetime") {
-            return date("Y-m-d H:i:s", $ms / 1000);
+            return $dt->setTimestamp($ms / 1000)->format('Y-m-d H:i:s');
         } else if ($out == "date") {
-            return date("Y-m-d", $ms / 1000);
+            return $dt->setTimestamp($ms / 1000)->format('Y-m-d');
         } else if ($out == "time") {
-            return date("H:i:s", $ms / 1000);
+            return $dt->setTimestamp($ms / 1000)->format('H:i:s');
         } else if ($type === DATE_TYPE_UNIT) {
             throw new Exception("Invalid output unit");
         }
@@ -159,7 +162,7 @@ class Date
             throw new Exception("Invalid output type");
         }
 
-        return date($out, $ms / 1000);
+        return $dt->setTimestamp($ms / 1000)->format($out);
     }
 
     /**
@@ -171,6 +174,9 @@ class Date
     public static function parse(string $query, $out = "s", $type = DATE_TYPE_UNIT)
     {
         $now = static::now();
+
+        $dt = new DateTime();
+        $dt->setTimestamp($now);
 
         $rgx_parser = [
             'tr_time' => [
@@ -211,15 +217,15 @@ class Date
             ],
             'time' => [
                 'rgx' => '/(\d{2}):(\d{2}):(\d{2})/',
-                'cb' => function ($matches) {
-                    $nd = date('Y-m-d') . ' ' . $matches[0];
+                'cb' => function ($matches) use ($dt) {
+                    $nd = $dt->format('Y-m-d') . ' ' . $matches[0];
                     return strtotime($nd);
                 },
             ],
             'time_ns' => [
                 'rgx' => '/(\d{2}):(\d{2})/',
-                'cb' => function ($matches) {
-                    $nd = date('Y-m-d') . ' ' . $matches[0] . ':00';
+                'cb' => function ($matches) use ($dt) {
+                    $nd = $dt->format('Y-m-d') . ' ' . $matches[0] . ':00';
                     return strtotime($nd);
                 },
             ],
@@ -231,20 +237,20 @@ class Date
             ],
             'today' => [
                 'rgx' => '/(today|date)/',
-                'cb' => function () use ($now) {
-                    return strtotime(date('Y-m-d', $now));
+                'cb' => function () use ($dt) {
+                    return $dt->format('Y-m-d');
                 },
             ],
             'yesterday' => [
                 'rgx' => '/yesterday/',
-                'cb' => function () use ($now) {
-                    return strtotime(date('Y-m-d', $now)) - 86400000;
+                'cb' => function () use ($dt) {
+                    return $dt->modify('-1 day')->format('Y-m-d');
                 },
             ],
             'tomorrow' => [
                 'rgx' => '/(tomorrow|tom)/',
-                'cb' => function () use ($now) {
-                    return strtotime(date('Y-m-d', $now)) + 86400000;
+                'cb' => function () use ($dt) {
+                    return $dt->modify('+1 day')->format('Y-m-d');
                 },
             ],
             'after' => [
