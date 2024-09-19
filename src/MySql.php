@@ -171,6 +171,11 @@ class MySql
         return static::array_get(static::$my_config, ['seeds_path', 'seed_path', 'seeders_path', 'seeder_path', 'seeder', 'seeds'], $default);
     }
 
+    public static function getMigrationsTable(): string
+    {
+        return static::array_get(static::$my_config, ['migrations_table', 'migration_table'], 'migrations');
+    }
+
     public function __toString(): string
     {
         return $this->query ?? $this->sql;
@@ -505,7 +510,8 @@ class MySql
      *      dbname: string,
      *      options: array,
      *      migrations_path: string,
-     *      seeds_path: string
+     *      seeds_path: string,
+     *      migrations_table: string
      * } $config Configuration array
      */
     public static function set_config(array $config)
