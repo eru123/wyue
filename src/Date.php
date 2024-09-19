@@ -286,4 +286,26 @@ class Date
 
         return static::ms_to($ts, $out, $type);
     }
+
+    /**
+     * Get a timestamp in milliseconds
+     * @param null|int|string $timestamp or DateTime format string
+     * @return int timestamp
+     * @see https://www.php.net/manual/en/datetime.formats.php
+     */
+    public static function getTimestamp(null|int|string $timestamp = null)
+    {
+        $dt = new DateTime();
+        if (is_null($timestamp)) {
+            if (static::$global_time) {
+                $dt->setTimestamp(static::$global_time);
+            }
+        } else if (!is_int($timestamp)) {
+            $dt->setTimestamp($timestamp);
+        } else {
+            $dt = new DateTime($timestamp);
+        }
+
+        return intval($dt->format('Uv'));
+    }
 }
