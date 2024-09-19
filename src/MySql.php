@@ -58,7 +58,7 @@ class MySql
                 } else {
                     $value = "'" . addslashes($param) . "'";
                 }
-                
+
                 $this->query = str_replace(":$key", $value, $this->query);
             }
         }
@@ -239,7 +239,6 @@ class MySql
             $sql .= " AS `{$alias}`";
         }
         return new static($sql);
-
     }
 
     public static function select(string|array|self $table, array $query)
@@ -486,7 +485,21 @@ class MySql
         return new PDO($dsn, $username, $password, $options);
     }
 
-    public static function set_pdo(array $pdo_opts)
+    /**
+     * Set MySql Configuration
+     * @param array{
+     *      driver: string,
+     *      host: string,
+     *      port: int,
+     *      username: string,
+     *      password: string,
+     *      dbname: string,
+     *      options: array,
+     *      migrations_path: string,
+     *      seeds_path: string
+     * } $pdo_opts Configuration array
+     */
+    public static function set_config(array $pdo_opts)
     {
         static::$pdo_opts = $pdo_opts;
     }
