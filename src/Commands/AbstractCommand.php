@@ -94,8 +94,6 @@ abstract class AbstractCommand
         $tmp = array_keys($this->arguments);
         $max = count($this->arguments) - 1;
 
-        var_dump($max);
-
         foreach ($args as $v) {
             if ($ctr > $max) {
                 break;

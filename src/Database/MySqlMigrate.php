@@ -10,15 +10,11 @@ use Wyue\Commands\AbstractCommand;
 use Wyue\Database\AbstractMigration;
 use Wyue\Format;
 
-class MySqlMakeMigration extends AbstractCommand
+class MySqlMigrate extends AbstractCommand
 {
     use MySqlMigrationTraits;
 
-    protected string $entry = 'make:migration';
-
-    protected array $arguments = [
-        'name' => 'The migration class name. Must be in PascalCase format.',
-    ];
+    protected string $entry = 'migrate';
 
     protected array $options = [
         'm|model' => 'Create migration with model.',
@@ -28,15 +24,12 @@ class MySqlMakeMigration extends AbstractCommand
 
     protected array $flags = [
         'f|force' => 'Force override existing migration file if happens to have a same class name.',
-        'V|verbose' => 'Verbose output.',
     ];
-
 
     public function handle()
     {
         $timestamp = Date::getTimestamp();
         $classname = $this->arg('name');
-        $fclassnme = "Wyue\Migrations\\" . $classname;
         $filemname = Str::pascal_case_to_snake_case($classname);
         $cabstract = AbstractMigration::class;
         $eabstract = explode('\\', $cabstract);
@@ -53,33 +46,17 @@ class MySqlMakeMigration extends AbstractCommand
         $dir = $this->getMigrationsDirectory();
         $file = $dir . DIRECTORY_SEPARATOR . "{$timestamp}_{$filemname}.php";
 
-        if ($this->flag('V|verbose')) {
-            CLI::info("Checking new migration file if exists: " . $file);
-        }
-
         if (file_exists($file) && !$this->flag('f|force')) {
             throw new Exception('Make Migration Error: Migration file already exists');
         }
 
-        if ($this->flag('V|verbose')) {
-            CLI::info("Checking migrations folder: " . $dir);
-        }
-
         $files = glob($dir . DIRECTORY_SEPARATOR . '*.php');
         foreach ($files as $f) {
-            $fn = basename($f);
-            $rgx = preg_match("/^([0-9]+)_([a-z_]+)\.php$/", $fn, $matches);
-            if ($rgx) {
-                $cn = $matches[2];
-                if ($cn == Str::pascal_case_to_snake_case($classname)) {
-                    throw new Exception('Make Migration Error: Class name already exists: ' . $fn);
-                }
-                require_once $f;
-            }
+            require_once $f;
         }
 
-        if ($this->flag('V|verbose')) {
-            CLI::info("Migration class checking: " . $fclassnme);
+        if (class_exists($classname) && !is_subclass_of($classname, AbstractMigration::class) && !$this->flag('f|force')) {
+            throw new Exception('Make Migration Error: Migration class already exists');
         }
 
         $content = <<<PHP
@@ -112,8 +89,7 @@ class MySqlMakeMigration extends AbstractCommand
 
         if ($success) {
             CLI::success("SUCCESS: Migration file created");
-            CLI::success("Class: " . $fclassnme);
-            CLI::success("File: " . $file);
+            CLI::success("File: {$file}");
             exit(0);
         } else {
             throw new Exception('Make Migration Error: Failed to create migration file');

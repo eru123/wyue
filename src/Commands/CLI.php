@@ -121,10 +121,7 @@ class CLI
      * Display the Help manual
      * @return void
      */
-    public static function help()
-    {
-
-    }
+    public static function help() {}
 
     /**
      * Start the CLI handler
@@ -132,20 +129,23 @@ class CLI
      */
     public static function listen()
     {
+        $verbose = false;
         try {
             if (php_sapi_name() !== 'cli') {
                 throw new Exception(get_class() . '::listen() can only be used in CLI mode');
                 exit(1);
             }
 
-            static::getEntryInstance()->handle();
+            $cmd = static::getEntryInstance();
+            $verbose = $cmd->flag('V|verbose');
+            $cmd->handle();
             exit(0);
         } catch (InvalidCommandException $e) {
-            static::error($e->getMessage());
+            static::error($verbose ? strval($e) : $e->getMessage());
             static::help();
             exit(1);
         } catch (Throwable $e) {
-            static::error($e->getMessage());
+            static::error($verbose ? strval($e) : $e->getMessage());
             exit(1);
         }
     }

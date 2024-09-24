@@ -67,7 +67,10 @@ abstract class AbstractMigration {
      * @return void
      * @throws Exception
      */
-    abstract public function down();
+    public function down()
+    {
+        // TODO: Implement down() method.
+    }
 
     /**
      * Get the name of the migration
