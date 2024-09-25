@@ -9,6 +9,7 @@ use Wyue\Commands\CLI;
 use Wyue\Commands\AbstractCommand;
 use Wyue\Database\AbstractMigration;
 use Wyue\Format;
+use Wyue\MySql;
 
 class MySqlMigrate extends AbstractCommand
 {
@@ -24,75 +25,36 @@ class MySqlMigrate extends AbstractCommand
 
     protected array $flags = [
         'f|force' => 'Force override existing migration file if happens to have a same class name.',
+        'x|dryrun' => 'Dry run.',
     ];
 
     public function handle()
     {
-        $timestamp = Date::getTimestamp();
-        $classname = $this->arg('name');
-        $filemname = Str::pascal_case_to_snake_case($classname);
-        $cabstract = AbstractMigration::class;
-        $eabstract = explode('\\', $cabstract);
-        $nabstract = end($eabstract);
-
-        if (!$classname) {
-            throw new Exception('Make Migration Error: Class name is required');
-        }
-
-        if (!Str::isPascalCase($classname)) {
-            throw new Exception('Make Migration Error: Class name must be in PascalCase format');
-        }
-
         $dir = $this->getMigrationsDirectory();
-        $file = $dir . DIRECTORY_SEPARATOR . "{$timestamp}_{$filemname}.php";
-
-        if (file_exists($file) && !$this->flag('f|force')) {
-            throw new Exception('Make Migration Error: Migration file already exists');
-        }
-
         $files = glob($dir . DIRECTORY_SEPARATOR . '*.php');
+
+        usort($files, function ($a, $b) {
+            $a = basename($a);
+            $b = basename($b);
+            return strcmp($a, $b);
+        });
+
         foreach ($files as $f) {
-            require_once $f;
-        }
+            $fn = basename($f);
+            $rgx = preg_match("/^([0-9]+)_([a-z_]+)\.php$/", $fn, $matches);
+            if ($rgx) {
+                $ts = $matches[1];
+                $cn = $matches[2];
 
-        if (class_exists($classname) && !is_subclass_of($classname, AbstractMigration::class) && !$this->flag('f|force')) {
-            throw new Exception('Make Migration Error: Migration class already exists');
-        }
-
-        $content = <<<PHP
-        <?php
-
-        namespace Wyue\Migrations;
-
-        use {UseAbstractMigration};
-
-        class {ClassName} extends {AbstractMigration}
-        {
-            public function up()
-            {
-                // TODO: Implement up() method.
+                $classes = get_declared_classes();
+                require_once $f;
+                $classes = array_diff(get_declared_classes(), $classes);
+                if (count($classes) == 1) {
+                    $class = reset($classes);
+                    $class = new $class(MySql::pdo(), $this->flag('x|dryrun'));
+                    $class->up();
+                }
             }
-
-            public function down()
-            {
-                // TODO: Implement down() method.
-            }
-        }
-
-        PHP;
-
-        $success = file_put_contents($file, Format::template($content, [
-            'ClassName' => $classname,
-            'UseAbstractMigration' => $cabstract,
-            'AbstractMigration' => $nabstract
-        ], FORMAT_TEMPLATE_CURLY));
-
-        if ($success) {
-            CLI::success("SUCCESS: Migration file created");
-            CLI::success("File: {$file}");
-            exit(0);
-        } else {
-            throw new Exception('Make Migration Error: Failed to create migration file');
         }
     }
 }
