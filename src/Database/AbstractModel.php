@@ -54,7 +54,7 @@ abstract class AbstractModel
      * @param null|string $table The table name for this model
      * @param null|string $primaryKey The primary key for this model
      */
-    public function __construct(null|array $data, null|string $table = null, null|string $primaryKey = null) {
+    public function __construct(null|array $data = null, null|string $table = null, null|string $primaryKey = null) {
         if (is_array($data)) {
             $this->data = $data;
         }
