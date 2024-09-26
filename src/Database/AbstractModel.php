@@ -75,7 +75,7 @@ abstract class AbstractModel
      * Get many data from database using Generator to yield the data
      * @param array $query The query to get data from
      * @param bool $history Whether to save the query history
-     * @return Generator<MySql>
+     * @return Generator<static>
      */
     public function select(string|array|MySql $query = [], $history = false): Generator
     {
@@ -89,10 +89,10 @@ abstract class AbstractModel
      * Get one data from database
      * @param array $query The query to get data from
      * @param bool $history Whether to save the query history
-     * @return false|null|MySql
+     * @return false|null|static
      * @throws Exception
      */
-    function find(string|array|MySql $query = [], $history = false): false|null|MySql
+    function find(string|array|MySql $query = [], $history = false): false|null|static
     {
         $result = MySql::select($this->table, $query)->exec($history)?->fetch(PDO::FETCH_ASSOC);
         return is_array($result) ? new static($result, $this->table, $this->primaryKey) : $result;
@@ -102,7 +102,7 @@ abstract class AbstractModel
      * Get many data from database, use this if you want to get all data at once, instead of using Generator
      * @param array $query The query to get data from
      * @param bool $history Whether to save the query history
-     * @return array<MySql>
+     * @return array<static>
      * @throws Exception
      */
     public function findMany(string|array|MySql $query = [], $history = false): array
