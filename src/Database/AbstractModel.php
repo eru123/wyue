@@ -9,7 +9,7 @@ use PDO;
 
 abstract class AbstractModel
 {
-    
+
     use MySqlTraits;
 
     /**
@@ -37,7 +37,8 @@ abstract class AbstractModel
      */
     private array $data = [];
 
-    public function __get(string $name) {
+    public function __get(string $name)
+    {
         if (isset($this->data[$name])) {
             return $this->data[$name];
         }
@@ -45,7 +46,8 @@ abstract class AbstractModel
         return null;
     }
 
-    public function __set(string $name, $value) {
+    public function __set(string $name, $value)
+    {
         $this->data[$name] = $value;
     }
 
@@ -54,7 +56,8 @@ abstract class AbstractModel
      * @param null|string $table The table name for this model
      * @param null|string $primaryKey The primary key for this model
      */
-    public function __construct(null|array $data = null, null|string $table = null, null|string $primaryKey = null) {
+    public function __construct(null|array $data = null, null|string $table = null, null|string $primaryKey = null)
+    {
         if (is_array($data)) {
             $this->data = $data;
         }
@@ -102,7 +105,8 @@ abstract class AbstractModel
      * @return array<MySql>
      * @throws Exception
      */
-    public function findMany(string|array|MySql $query = [], $history = false): array {
+    public function findMany(string|array|MySql $query = [], $history = false): array
+    {
         return array_map(fn($row) => new static($row), MySql::select($this->table, $query)->exec($history)?->fetchAll(PDO::FETCH_ASSOC) ?: []);
     }
 
@@ -124,7 +128,7 @@ abstract class AbstractModel
 
         if (!!MySql::insert($this->table, $data)?->exec()?->rowCount()) {
             $id = MySql::id();
-            if(!$this->primaryKey) {
+            if (!$this->primaryKey) {
                 $this->data[$this->primaryKey] = $id;
             }
             return $id;
@@ -204,5 +208,14 @@ abstract class AbstractModel
     public function exists(): bool
     {
         return MySql::raw("SHOW TABLES LIKE '{$this->table}'")->exec()?->rowCount() > 0;
+    }
+
+    /**
+     * Convert to array
+     * @return array
+     */
+    public function __toArray(): array
+    {
+        return $this->data;
     }
 }
