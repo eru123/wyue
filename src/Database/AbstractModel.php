@@ -116,7 +116,7 @@ abstract class AbstractModel
      * @return false|string The id of the inserted data
      * @throws Exception
      */
-    public function insert(null|array $data): false|string
+    public function insert(null|array $data = null): false|string
     {
         if (is_null($data)) {
             $data = $this->data;
@@ -161,7 +161,7 @@ abstract class AbstractModel
      * @return int The number of rows updated
      * @throws Exception
      */
-    public function update(null|array $data, null|MySql|string|array $where): int
+    public function update(null|array $data = null, null|MySql|string|array $where = null): int
     {
         if (is_null($data) && is_null($where) && !empty($this->primaryKey) && isset($this->data[$this->primaryKey])) {
             $data = $this->data;
@@ -181,7 +181,7 @@ abstract class AbstractModel
      * @return int The number of rows deleted
      * @throws Exception
      */
-    public function delete(null|MySql|string|array $where): int
+    public function delete(null|MySql|string|array $where = null): int
     {
         if (is_null($where) && !empty($this->primaryKey) && isset($this->data[$this->primaryKey])) {
             $where = [$this->primaryKey => $this->data[$this->primaryKey]];
