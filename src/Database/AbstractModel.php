@@ -15,27 +15,27 @@ abstract class AbstractModel
     /**
      * @var string The table name for this model
      */
-    private string $table;
+    protected null|string $table = null;
 
     /**
      * @var null|array The fillable fields for this model, keep it null to allow all fields
      */
-    private null|array $fillable = null;
+    protected null|array $fillable = null;
 
     /**
      * @var null|array The hidden fields for this model, keep it null to allow all fields
      */
-    private null|array $hidden = null;
+    protected null|array $hidden = null;
 
     /**
      * @var null|string|int The primary key for this model, if using any
      */
-    private null|string|int $primaryKey = null;
+    protected null|string|int $primaryKey = null;
 
     /**
      * @var array The data and default values for this model
      */
-    private array $data = [];
+    protected array $data = [];
 
     public function __get(string $name)
     {
@@ -81,7 +81,7 @@ abstract class AbstractModel
     {
         $stmt = MySql::select($this->table, $query)->exec($history);
         while ($result = $stmt?->fetch(PDO::FETCH_ASSOC)) {
-            yield new static($result);
+            yield new static($result, $this->table, $this->primaryKey);
         }
     }
 
@@ -95,7 +95,7 @@ abstract class AbstractModel
     function find(string|array|MySql $query = [], $history = false): false|null|MySql
     {
         $result = MySql::select($this->table, $query)->exec($history)?->fetch(PDO::FETCH_ASSOC);
-        return is_array($result) ? new static($result) : $result;
+        return is_array($result) ? new static($result, $this->table, $this->primaryKey) : $result;
     }
 
     /**
@@ -107,7 +107,7 @@ abstract class AbstractModel
      */
     public function findMany(string|array|MySql $query = [], $history = false): array
     {
-        return array_map(fn($row) => new static($row), MySql::select($this->table, $query)->exec($history)?->fetchAll(PDO::FETCH_ASSOC) ?: []);
+        return array_map(fn($row) => new static($row, $this->table, $this->primaryKey), MySql::select($this->table, $query)->exec($history)?->fetchAll(PDO::FETCH_ASSOC) ?: []);
     }
 
     /**
