@@ -13,45 +13,44 @@ trait IO
      */
     public static function print(string $message, ?string $color = null, bool $return = false)
     {
-        switch (strtolower($color)) {
-            case 'black':
-                $color = "\e[30m";
-                break;
-            case 'red':
-            case 'danger':
-            case 'error':
-                $color = "\e[31m";
-                break;
-            case 'green':
-            case 'success':
-                $color = "\e[32m";
-                break;
-            case 'yellow':
-            case 'warning':
-                $color = "\e[33m";
-                break;
-            case 'blue':
-            case 'primary':
-                $color = "\e[34m";
-                break;
-            case 'magenta':
-                $color = "\e[35m";
-                break;
-            case 'cyan':
-            case 'info':
-                $color = "\e[36m";
-                break;
-            case 'white':
-                $color = "\e[37m";
-                break;
-            case 'default':
-                $color = "\e[39m";
-                break;
-            default:
-                break;
-        }
-
         if ($color) {
+            switch (strtolower($color)) {
+                case 'black':
+                    $color = "\e[30m";
+                    break;
+                case 'red':
+                case 'danger':
+                case 'error':
+                    $color = "\e[31m";
+                    break;
+                case 'green':
+                case 'success':
+                    $color = "\e[32m";
+                    break;
+                case 'yellow':
+                case 'warning':
+                    $color = "\e[33m";
+                    break;
+                case 'blue':
+                case 'primary':
+                    $color = "\e[34m";
+                    break;
+                case 'magenta':
+                    $color = "\e[35m";
+                    break;
+                case 'cyan':
+                case 'info':
+                    $color = "\e[36m";
+                    break;
+                case 'white':
+                    $color = "\e[37m";
+                    break;
+                case 'default':
+                    $color = "\e[39m";
+                    break;
+                default:
+                    break;
+            }
             $message = ($color ??  '') . $message . "\e[0m";
         }
 
@@ -80,7 +79,7 @@ trait IO
      */
     public static function info(string $message, ?string $color = "info")
     {
-        fwrite(STDOUT, static::print(trim($message) . PHP_EOL, $color, true));
+        fwrite(STDOUT, static::print(rtrim($message) . PHP_EOL, $color, true));
     }
 
     /**
@@ -91,7 +90,7 @@ trait IO
      */
     public static function error(string $message, string $color = "error")
     {
-        fwrite(STDERR, static::print(trim($message) . PHP_EOL, $color, true));
+        fwrite(STDERR, static::print(rtrim($message) . PHP_EOL, $color, true));
     }
 
     /**
@@ -102,7 +101,7 @@ trait IO
      */
     public static function success(string $message)
     {
-        fwrite(STDOUT, static::print(trim($message) . PHP_EOL, "success", true));
+        fwrite(STDOUT, static::print(rtrim($message) . PHP_EOL, "success", true));
     }
 
     /**
@@ -113,7 +112,7 @@ trait IO
      */
     public static function warning(string $message)
     {
-        fwrite(STDOUT, static::print(trim($message) . PHP_EOL, "warning", true));
+        fwrite(STDOUT, static::print(rtrim($message) . PHP_EOL, "warning", true));
     }
 
     /**

@@ -161,6 +161,11 @@ class MySql
         return array_keys($value) === range(0, count($value) - 1);
     }
 
+    public static function myConfig(string|array $key, $default = null)
+    {
+        return static::array_get(static::$my_config, $key, $default);
+    }
+
     public static function getMigrationsPath(string $default = null)
     {
         return static::array_get(static::$my_config, ['migrations_path', 'migration_path', 'migrations', 'migration'], $default);
@@ -496,7 +501,18 @@ class MySql
         if ($dbname) {
             $dsn .= "dbname={$dbname};";
         }
-        return new PDO($dsn, $username, $password, $options);
+
+        $args = [$dsn, $username];
+        
+        if (!empty($password)) {
+            $args[] = $password;
+        }
+
+        if (!empty($options)) {
+            $args[] = $options;
+        }
+        
+        return new PDO(...$args);
     }
 
     /**
@@ -519,7 +535,7 @@ class MySql
         static::$my_config = $config;
     }
 
-    public static function pdo(?array $options = null)
+    public static function pdo(?array $options = null): null|PDO
     {
         if (!static::$pdo) {
             static::$pdo = static::connect($options);

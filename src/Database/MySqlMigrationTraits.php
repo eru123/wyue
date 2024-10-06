@@ -3,6 +3,7 @@
 namespace Wyue\Database;
 
 use Exception;
+use Wyue\Commands\CLI;
 use Wyue\MySql;
 
 trait MySqlMigrationTraits
@@ -43,5 +44,31 @@ trait MySqlMigrationTraits
         }
 
         return $table;
+    }
+
+    private function initMigrationsTable(): null|bool
+    {
+        $table = $this->getMigrationsTable();
+        $dbname = MySql::myConfig(['dbname', 'db_name', 'name', 'db']);
+
+        if (empty($dbname)) {
+            throw new Exception("Database name not set");
+        }
+
+        if (MySql::raw("SELECT * FROM information_schema.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?", [$dbname, $table])->exec()?->fetch(\PDO::FETCH_ASSOC)) {
+            return null;
+        }
+
+        $sql = "CREATE TABLE IF NOT EXISTS ? (
+            `version` BIGINT NOT NULL,
+            `filename` VARCHAR(255) NULL DEFAULT NULL,
+            `name` VARCHAR(50) NULL DEFAULT NULL,
+            `start_at` TIMESTAMP NULL DEFAULT NULL,
+            `end_at` TIMESTAMP NULL DEFAULT NULL,
+            `breakpoint` INT NULL DEFAULT 0,
+            PRIMARY KEY (`version`)
+        );";
+
+        return MySql::raw($sql, [MySql::raw("`" . $table . "`")])->exec() !== false;
     }
 }

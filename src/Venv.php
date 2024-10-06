@@ -203,14 +203,19 @@ class Venv
 
     /**
      * Move all key-value pair from $_ENV to virtual env
+     * @param bool $copyOnly Allow copying of env but do not remove them
      * @return void
      */
-    public static function protect(): void
+    public static function protect(bool $copyOnly = false): void
     {
         $envs = getenv();
         $envs = array_merge(is_array($envs) ? $envs : [], is_array($_ENV) ? $_ENV : []);
         foreach ($envs as $key => $value) {
             self::set($key, $value);
+        }
+
+        if ($copyOnly) {
+            return;
         }
 
         if (function_exists('putenv')) {
