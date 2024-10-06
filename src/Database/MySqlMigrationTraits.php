@@ -37,7 +37,7 @@ trait MySqlMigrationTraits
 
     private function getMigrationsTable(): string
     {
-        $table = $this->opt('t|table', MySql::getMigrationsTable());
+        $table = MySql::getMigrationsTable();
 
         if (empty($table)) {
             $table = 'migrations';
