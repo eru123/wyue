@@ -155,10 +155,10 @@ class MySqlMakeMigration extends AbstractCommand
 
         class {ModelName} extends AbstractModel
         {
-            protected null|string \$table = '{ModelTable}';
-            protected null|array \$fillable = null;
-            protected null|array \$hidden = null;
-            protected null|string|int \$primaryKey = null;
+            protected \$table = '{ModelTable}';
+            protected \$fillable = null;
+            protected \$hidden = null;
+            protected \$primaryKey = null;
         }
          
         PHP;

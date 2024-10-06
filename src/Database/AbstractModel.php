@@ -15,27 +15,28 @@ abstract class AbstractModel
     /**
      * @var string The table name for this model
      */
-    protected null|string $table = null;
+    protected $table = '';
 
     /**
      * @var null|array The fillable fields for this model, keep it null to allow all fields
      */
-    protected null|array $fillable = null;
+    protected $fillable = null;
 
     /**
      * @var null|array The hidden fields for this model, keep it null to allow all fields
      */
-    protected null|array $hidden = null;
+    protected $hidden = null;
 
     /**
      * @var null|string|int The primary key for this model, if using any
      */
-    protected null|string|int $primaryKey = null;
+    protected $primaryKey = null;
 
     /**
      * @var array The data and default values for this model
      */
-    protected array $data = [];
+    protected $data = [];
+
 
     public function __get(string $name)
     {
