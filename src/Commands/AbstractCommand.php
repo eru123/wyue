@@ -238,11 +238,59 @@ abstract class AbstractCommand
     }
 
     /**
+     * @param array $haystack Array of flags or options
+     * @return array Translate keys
+     */
+    public function translateKeyFlags(array $haystack): array
+    {
+        $res = [];
+        foreach ($haystack as $k => $v) {
+            $kas = explode("|", $k);
+            $kat = array_map(fn ($i) => strlen($i) == 1 ? "-$i" : "--$i", $kas);
+            $kak = implode("|", $kat);
+            $res[$kak] = $v;
+        }
+        return $res;
+    }
+
+    /**
      * Display the help for the command
      * @return void
      */
     public function help(): void
     {
-        // TODO: Implement help() method.
+        $entry = $this->entry;
+        $description = $this->description;
+        $args = array_map(fn($v) => "<$v>", array_keys($this->getArguments()));
+
+        CLI::println("$entry " . implode(" ", $args), CLI::COLOR_BLUE);
+        CLI::println("\tDescription", CLI::COLOR_YELLOW);
+        CLI::println("\t\t$description");
+
+        if (count($this->getArguments())) {
+            CLI::println("\tArguments:", CLI::COLOR_YELLOW);
+            foreach ($this->getArguments() as $k => $v) {
+                CLI::print("\t\t<$k> ", CLI::COLOR_BLUE);
+                CLI::println($v);
+            }
+        }
+        
+        if (count($this->getOptions())) {
+            CLI::println("\tOptions:", CLI::COLOR_YELLOW);
+            foreach ($this->translateKeyFlags($this->getOptions()) as $k => $v) {
+                CLI::print("\t\t$k ", CLI::COLOR_BLUE);
+                CLI::println($v);
+            }
+        }
+        
+        if (count($this->getFlags())) {
+            CLI::println("\tFlags:", CLI::COLOR_YELLOW);
+            foreach ($this->translateKeyFlags($this->getFlags()) as $k => $v) {
+                CLI::print("\t\t$k ", CLI::COLOR_BLUE);
+                CLI::println($v);
+            }
+        }
+        
+        CLI::print("\n");
     }
 }
