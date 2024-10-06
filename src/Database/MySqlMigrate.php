@@ -13,12 +13,6 @@ class MySqlMigrate extends AbstractCommand
 
     protected string $entry = 'migrate';
 
-    protected array $options = [
-        'm|model' => 'Create migration with model.',
-        'd|dir' => 'The directory where the migration file will be created.',
-        't|table' => 'The table name for the migration.',
-    ];
-
     protected array $flags = [
         'f|force' => 'Force override existing migration file if happens to have a same class name.',
         'x|dryrun' => 'Dry run.',
