@@ -70,8 +70,10 @@ class CLI
     public static function getEntryInstance(): AbstractCommand
     {
         $name = static::getEntryName();
-        if (empty($name) || !isset(static::$intances[$name])) {
-            throw new InvalidCommandException('Command \'' . implode(' ', static::args()) . '\' is not a registered command.');
+        if (empty($name)) {
+            throw new InvalidCommandException("No Command");
+        } elseif (!isset(static::$intances[$name])) {
+            throw new InvalidCommandException("Command '" . implode(' ', static::args()) . "' is not a registered command.");
         }
 
         return static::$intances[$name];
@@ -98,7 +100,6 @@ class CLI
                     continue;
                 }
 
-
                 $instance = new $class();
                 if (class_exists($class) && $instance instanceof AbstractCommand) {
 
@@ -121,7 +122,12 @@ class CLI
      * Display the Help manual
      * @return void
      */
-    public static function help() {}
+    public static function help()
+    {
+        foreach (static::$intances as $instance) {
+            $instance->help();
+        }
+    }
 
     /**
      * Start the CLI handler
@@ -142,10 +148,12 @@ class CLI
             exit(0);
         } catch (InvalidCommandException $e) {
             static::error($verbose ? strval($e) : $e->getMessage());
+            CLI::println();
             static::help();
             exit(1);
         } catch (Throwable $e) {
             static::error($verbose ? strval($e) : $e->getMessage());
+            CLI::println();
             exit(1);
         }
     }
