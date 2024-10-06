@@ -181,6 +181,16 @@ class MySql
         return static::array_get(static::$my_config, ['migrations_table', 'migration_table'], 'migrations');
     }
 
+    public static function getModelsPath(): string
+    {
+        return static::array_get(static::$my_config, ['models_path', 'models'], 'App/Models');
+    }
+
+    public static function getModelsNamespace(): string
+    {
+        return static::array_get(static::$my_config, ['models_namespace'], 'App\Models');
+    }
+
     public function __toString(): string
     {
         return $this->query ?? $this->sql;
@@ -503,7 +513,7 @@ class MySql
         }
 
         $args = [$dsn, $username];
-        
+
         if (!empty($password)) {
             $args[] = $password;
         }
@@ -511,7 +521,7 @@ class MySql
         if (!empty($options)) {
             $args[] = $options;
         }
-        
+
         return new PDO(...$args);
     }
 
