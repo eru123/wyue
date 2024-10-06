@@ -172,7 +172,7 @@ class MySqlMakeMigration extends AbstractCommand
         $success = file_put_contents($file, $content);
 
         if ($success) {
-            CLI::success("SUCCESS: Model file created");
+            CLI::success("\nSUCCESS: Model file created");
             CLI::success("Class: $namespace\\$classname");
             CLI::success("File: " . $file);
             exit(0);
