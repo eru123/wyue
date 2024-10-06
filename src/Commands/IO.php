@@ -66,7 +66,7 @@ trait IO
      * @param string $message The message
      * @param string|null $color The color of the message. In escape sequence format.
      */
-    public static function println(string $message, ?string $color = null)
+    public static function println(string $message = "", ?string $color = null)
     {
         fwrite(STDOUT, static::print($message . PHP_EOL, $color, true));
     }
