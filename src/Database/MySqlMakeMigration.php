@@ -23,7 +23,7 @@ class MySqlMakeMigration extends AbstractCommand
 
     protected array $options = [
         'd|dir' => 'The directory where the migration file will be created.',
-        't|table' => 'The table name for the migration.',
+        't|table' => 'The table name for the model. Use only if -m flag is used.',
     ];
 
     protected array $flags = [
