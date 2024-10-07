@@ -65,7 +65,7 @@ class MySqlMigrate extends AbstractCommand
                         }
 
                         $class = new $class(MySql::pdo(), $this->flag('x|dryrun'));
-                        !$this->flag('x|dryrun') ? MySql::pdo()->beginTransaction() : null;
+                        $this->flag('x|dryrun') || MySql::pdo()->beginTransaction();
 
                         try {
                             $start_at = date("Y-m-d H:i:s");
@@ -79,11 +79,11 @@ class MySqlMigrate extends AbstractCommand
                                 'end_at' => $end_at,
                                 'breakpoint' => 0
                             ])->exec();
-                            $this->flag('x|dryrun') || MySql::pdo()->commit();
+                            $this->flag('x|dryrun') || (MySql::pdo()->inTransaction() && MySql::pdo()->commit());
                             $processed++;
                             CLI::info("Migrated: " . $f);
                         } catch (\Throwable $e) {
-                            $this->flag('x|dryrun') || MySql::pdo()->rollBack();
+                            $this->flag('x|dryrun') || (MySql::pdo()->inTransaction() && MySql::pdo()->rollBack());
                             throw $e;
                         }
                     }

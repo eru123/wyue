@@ -71,7 +71,7 @@ class MySqlRollback extends AbstractCommand
                         }
 
                         $class = new $class(MySql::pdo(), $this->flag('x|dryrun'));
-                        !$this->flag('x|dryrun') ? MySql::pdo()->beginTransaction() : null;
+                        $this->flag('x|dryrun') || MySql::pdo()->beginTransaction();
 
                         try {
                             $class->down();
@@ -80,7 +80,7 @@ class MySqlRollback extends AbstractCommand
                                 'filename' => $fn,
                                 'name' => $className,
                             ])->exec();
-                            $this->flag('x|dryrun') || MySql::pdo()->commit();
+                            $this->flag('x|dryrun') || (MySql::pdo()->inTransaction() && MySql::pdo()->commit());
                             $processed++;
                             CLI::info("Rollback: " . $f);
 
@@ -88,7 +88,7 @@ class MySqlRollback extends AbstractCommand
                                 break;
                             }
                         } catch (\Throwable $e) {
-                            $this->flag('x|dryrun') || MySql::pdo()->rollBack();
+                            $this->flag('x|dryrun') || (MySql::pdo()->inTransaction() && MySql::pdo()->rollBack());
                             throw $e;
                         }
                     }
