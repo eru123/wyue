@@ -3,11 +3,9 @@
 namespace Wyue\Database;
 
 use Exception;
-use Wyue\Date;
 use Wyue\Str;
 use Wyue\Commands\CLI;
 use Wyue\Commands\AbstractCommand;
-use Wyue\Database\AbstractMigration;
 use Wyue\Format;
 use Wyue\MySql;
 

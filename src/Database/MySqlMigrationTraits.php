@@ -3,7 +3,6 @@
 namespace Wyue\Database;
 
 use Exception;
-use Wyue\Commands\CLI;
 use Wyue\MySql;
 
 trait MySqlMigrationTraits
