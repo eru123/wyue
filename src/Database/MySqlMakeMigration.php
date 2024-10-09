@@ -10,6 +10,7 @@ use Wyue\Commands\AbstractCommand;
 use Wyue\Database\AbstractMigration;
 use Wyue\Format;
 use Wyue\MySql;
+use Wyue\Exceptions\InvalidCommandException;
 
 class MySqlMakeMigration extends AbstractCommand
 {
@@ -36,18 +37,18 @@ class MySqlMakeMigration extends AbstractCommand
     {
         $timestamp = Date::getTimestamp();
         $classname = $this->arg('name');
-        $fclassnme = "Wyue\Migrations\\" . $classname;
-        $filemname = Str::pascal_case_to_snake_case($classname);
+        $fclassnme = "Wyue\Migrations\\" . strval($classname);
+        $filemname = Str::pascal_case_to_snake_case(strval($classname));
         $cabstract = AbstractMigration::class;
         $eabstract = explode('\\', $cabstract);
         $nabstract = end($eabstract);
 
-        if (!$classname) {
-            throw new Exception('Make Migration Error: Class name is required');
+        if (empty($classname)) {
+            throw new InvalidCommandException('Make Migration Error: Class name is required');
         }
 
-        if (!Str::isPascalCase($classname)) {
-            throw new Exception('Make Migration Error: Class name must be in PascalCase format');
+        if (!Str::isPascalCase(strval($classname))) {
+            throw new InvalidCommandException('Make Migration Error: Class name must be in PascalCase format');
         }
 
         $dir = $this->getMigrationsDirectory();
@@ -101,8 +102,7 @@ class MySqlMakeMigration extends AbstractCommand
                 // TODO: Implement down() method.
             }
         }
-
-        PHP;
+        PHP . PHP_EOL;
 
         $success = file_put_contents($file, Format::template($content, [
             'ClassName' => $classname,
