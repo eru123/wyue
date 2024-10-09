@@ -136,6 +136,8 @@ class CLI
     public static function listen()
     {
         $verbose = false;
+        $cmd = null;
+
         try {
             if (php_sapi_name() !== 'cli') {
                 throw new Exception(get_class() . '::listen() can only be used in CLI mode');
@@ -149,7 +151,7 @@ class CLI
         } catch (InvalidCommandException $e) {
             static::error($verbose ? strval($e) : $e->getMessage());
             CLI::println();
-            static::help();
+            $cmd->help();
             exit(1);
         } catch (Throwable $e) {
             static::error($verbose ? strval($e) : $e->getMessage());
