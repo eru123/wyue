@@ -167,6 +167,13 @@ abstract class AbstractCommand
 
         foreach ($args as $v) {
             if ($t_con) {
+                if (preg_match('/^--?(.*)$/', $v, $m)) {
+                    $opts[$l_key] = true;
+                    $t_con = true;
+                    $l_key = $m[1];
+                    continue;
+                }
+
                 if (is_null($key) || in_array($l_key, $flags)) {
                     if (isset($opts[$l_key]) && is_array($opts[$l_key])) {
                         $opts[$l_key][] = $v;
@@ -181,7 +188,7 @@ abstract class AbstractCommand
                 $l_key = null;
                 continue;
             }
-
+            
             if (preg_match('/^--?(.*)$/', $v, $m)) {
                 $t_con = true;
                 $l_key = $m[1];
