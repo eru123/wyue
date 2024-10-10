@@ -57,7 +57,7 @@ abstract class AbstractModel
      * @param null|string $table The table name for this model
      * @param null|string $primaryKey The primary key for this model
      */
-    public function __construct(null|array $data = null, null|string $table = null, null|string $primaryKey = null)
+    public function __construct(null|array $data = null, null|string $table = null)
     {
         if (is_array($data)) {
             $this->data = $data;
@@ -65,10 +65,6 @@ abstract class AbstractModel
 
         if ($table) {
             $this->table = $table;
-        }
-
-        if ($primaryKey) {
-            $this->primaryKey = $primaryKey;
         }
     }
 
@@ -82,7 +78,7 @@ abstract class AbstractModel
     {
         $stmt = MySql::select($this->table, $query)->exec($history);
         while ($result = $stmt?->fetch(PDO::FETCH_ASSOC)) {
-            yield new static($result, $this->table, $this->primaryKey);
+            yield new static($result, $this->table);
         }
     }
 
@@ -96,7 +92,7 @@ abstract class AbstractModel
     function find(string|array|MySql $query = [], $history = false): false|null|static
     {
         $result = MySql::select($this->table, $query)->exec($history)?->fetch(PDO::FETCH_ASSOC);
-        return is_array($result) ? new static($result, $this->table, $this->primaryKey) : $result;
+        return is_array($result) ? new static($result, $this->table) : $result;
     }
 
     /**
@@ -108,7 +104,7 @@ abstract class AbstractModel
      */
     public function findMany(string|array|MySql $query = [], $history = false): array
     {
-        return array_map(fn($row) => new static($row, $this->table, $this->primaryKey), MySql::select($this->table, $query)->exec($history)?->fetchAll(PDO::FETCH_ASSOC) ?: []);
+        return array_map(fn($row) => new static($row, $this->table), MySql::select($this->table, $query)->exec($history)?->fetchAll(PDO::FETCH_ASSOC) ?: []);
     }
 
     /**
@@ -123,11 +119,12 @@ abstract class AbstractModel
             $data = $this->data;
         }
 
-        $data = $this->beforeInsert($data);
-
         if (!empty($this->fillable)) {
             $data = array_intersect_key($data, array_flip($this->fillable));
         }
+
+        $data = $this->beforeInsert($data);
+        $data = $this->beforeInsertInternal($data);
 
         if (!!MySql::insert($this->table, $data)?->exec()?->rowCount()) {
             $id = MySql::id();
@@ -150,8 +147,9 @@ abstract class AbstractModel
     {
         foreach ($data as &$row) {
             if (!empty($this->fillable)) {
-                $row = $this->beforeInsert($row);
                 $row = array_intersect_key($row, array_flip($this->fillable));
+                $row = $this->beforeInsert($row);
+                $row = $this->beforeInsertInternal($row);
             }
         }
 
@@ -172,12 +170,12 @@ abstract class AbstractModel
             $where = [$this->primaryKey => $this->data[$this->primaryKey]];
         }
 
-        $data = $this->beforeUpdate($data);
-
         if (!empty($this->fillable)) {
             $data = array_intersect_key($data, array_flip($this->fillable));
         }
 
+        $data = $this->beforeUpdate($data);
+        $data = $this->beforeUpdateInternal($data);
         return intval(MySql::update($this->table, $data, $where)?->exec()?->rowCount());
     }
 
@@ -236,12 +234,34 @@ abstract class AbstractModel
     }
 
     /**
+     * Parse data before insert (for framework use)
+     * @param array $data
+     * @return array
+     */
+    public function beforeInsertInternal(array $data): array
+    {
+        // TODO: Implement beforeInsertInternal() method.
+        return $data;
+    }
+
+    /**
      * Parse data before update
      * @param array $data
      * @return array
      */
     public function beforeUpdate(array $data): array
     {
+        return $data;
+    }
+
+    /**
+     * Parse data before update (for framework use)
+     * @param array $data
+     * @return array
+     */
+    public function beforeUpdateInternal(array $data): array
+    {
+        // TODO: Implement beforeUpdateInternal() method.
         return $data;
     }
 }
