@@ -123,6 +123,8 @@ abstract class AbstractModel
             $data = $this->data;
         }
 
+        $data = $this->beforeInsert($data);
+
         if (!empty($this->fillable)) {
             $data = array_intersect_key($data, array_flip($this->fillable));
         }
@@ -148,6 +150,7 @@ abstract class AbstractModel
     {
         foreach ($data as &$row) {
             if (!empty($this->fillable)) {
+                $row = $this->beforeInsert($row);
                 $row = array_intersect_key($row, array_flip($this->fillable));
             }
         }
@@ -168,6 +171,8 @@ abstract class AbstractModel
             $data = $this->data;
             $where = [$this->primaryKey => $this->data[$this->primaryKey]];
         }
+
+        $data = $this->beforeUpdate($data);
 
         if (!empty($this->fillable)) {
             $data = array_intersect_key($data, array_flip($this->fillable));
@@ -217,6 +222,26 @@ abstract class AbstractModel
      */
     public function __toArray(): array
     {
-        return $this->data;
+        return array_diff_key($this->data, array_flip($this->hidden));
+    }
+
+    /**
+     * Parse data before insert
+     * @param array $data
+     * @return array
+     */
+    public function beforeInsert(array $data): array
+    {
+        return $data;
+    }
+
+    /**
+     * Parse data before update
+     * @param array $data
+     * @return array
+     */
+    public function beforeUpdate(array $data): array
+    {
+        return $data;
     }
 }
