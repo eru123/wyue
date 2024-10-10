@@ -50,11 +50,6 @@ abstract class AbstractMigration {
         return $segment[count($segment) - 1];
     }
 
-    public function migrate() {
-        $timestamp = $this->getTimestamp();
-        $className = $this->getClassName();
-    }
-
     /**
      * Migrate up
      * @return void
@@ -71,9 +66,4 @@ abstract class AbstractMigration {
     {
         // TODO: Implement down() method.
     }
-
-    /**
-     * Get the name of the migration
-     * @return string
-     */
 }
