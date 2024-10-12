@@ -89,7 +89,7 @@ abstract class AbstractModel
      * @return false|null|static
      * @throws Exception
      */
-    function find(string|array|MySql $query = [], $history = false): false|null|static
+    function find(array $query = [], $history = false): false|null|static
     {
         $result = MySql::select($this->table, $query)->exec($history)?->fetch(PDO::FETCH_ASSOC);
         return is_array($result) ? new static($result, $this->table) : $result;
@@ -102,7 +102,7 @@ abstract class AbstractModel
      * @return array<static>
      * @throws Exception
      */
-    public function findMany(string|array|MySql $query = [], $history = false): array
+    public function findMany(array $query = [], $history = false): array
     {
         return array_map(fn($row) => new static($row, $this->table), MySql::select($this->table, $query)->exec($history)?->fetchAll(PDO::FETCH_ASSOC) ?: []);
     }
