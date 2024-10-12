@@ -18,14 +18,14 @@ abstract class AbstractModel
     protected $table = '';
 
     /**
-     * @var null|array The fillable fields for this model, keep it null to allow all fields
+     * @var array The fillable fields for this model, keep it null to allow all fields
      */
-    protected $fillable = null;
+    protected $fillable = [];
 
     /**
-     * @var null|array The hidden fields for this model, keep it null to allow all fields
+     * @var array The hidden fields for this model, keep it null to allow all fields
      */
-    protected $hidden = null;
+    protected $hidden = [];
 
     /**
      * @var null|string|int The primary key for this model, if using any
