@@ -64,9 +64,9 @@ class Route
      * @param array|null $key Magic array key
      * @return array|mixed returns an array if $key is null, else the value of the key
      */
-    public function Params(?string $key = null)
+    public function Params(?string $key = null, $default = null)
     {
-        return Venv::_get($this->urlParameters, $key);
+        return Venv::_get($this->urlParameters, $key, $default);
     }
 
     /**
@@ -182,6 +182,7 @@ class Route
             $routeContext = new Route($this);
             $routeContext->setParams($params + $this->Params());
             $routeContext->setParentRoute($cpath);
+            $routeContext->Debug($this->debug);
 
             $res = null;
             $cbs = array_merge($this->middlewares, $cb);
@@ -244,12 +245,18 @@ class Route
     public function defaultErrorHandler($routeContext, $e)
     {
         $this->code($e->getCode());
-        return [
+        $res = [
             "code" => $this->httpCode,
             "error" => "Internal Server Error",
             "message" => $e->getMessage(),
-            "trace" => $e->getTrace()
         ];
+
+        if ($this->debug || $routeContext->getDebug()) {
+            $res['trace'] = $e->getTrace();
+            $res['trace_string'] = $e->getTraceAsString();
+        }
+
+        return $res;
     }
 
     /**
@@ -273,6 +280,7 @@ class Route
                 $debug['payload'] = $this->Payload();
                 $debug['params'] = $this->Params();
 
+                $debug['mysql_history'] = MySql::history();
                 if (isset($_FILES) && !empty($_FILES)) {
                     $debug['files'] = @$_FILES;
                 }
