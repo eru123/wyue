@@ -151,7 +151,11 @@ class CLI
         } catch (InvalidCommandException $e) {
             static::error($verbose ? strval($e) : $e->getMessage());
             CLI::println();
-            $cmd->help();
+            if ($cmd) {
+                $cmd->help();
+            } else {
+                static::help();
+            }
             exit(1);
         } catch (Throwable $e) {
             static::error($verbose ? strval($e) : $e->getMessage());
