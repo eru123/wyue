@@ -79,7 +79,7 @@ class MakeCommand extends AbstractCommand
         $success = file_put_contents($file, $content);
 
         if ($success) {
-            CLI::success("SUCCESS: Model file created");
+            CLI::success("SUCCESS: Command file created");
             CLI::success("Class: " . static::$namespace . '\\' . $classname);
             CLI::success("File: " . $file);
             exit(0);
