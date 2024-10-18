@@ -110,10 +110,11 @@ abstract class AbstractModel
     /**
      * Insert single row data into database
      * @param array $data The data to insert
+     * @param bool $history Whether to save the query history
      * @return false|string The id of the inserted data
      * @throws Exception
      */
-    public function insert(null|array $data = null): false|string
+    public function insert(null|array $data = null, bool $history = false): false|string
     {
         if (is_null($data)) {
             $data = $this->data;
@@ -126,7 +127,7 @@ abstract class AbstractModel
         $data = $this->beforeInsert($data);
         $data = $this->beforeInsertInternal($data);
 
-        if (!!MySql::insert($this->table, $data)?->exec()?->rowCount()) {
+        if (!!MySql::insert($this->table, $data)?->exec($history)?->rowCount()) {
             $id = MySql::id();
             if (!$this->primaryKey) {
                 $this->data[$this->primaryKey] = $id;
@@ -140,10 +141,11 @@ abstract class AbstractModel
     /**
      * Insert multiple rows data into database
      * @param array $data The data to insert
+     * @param bool $history Whether to save the query history
      * @return int The number of rows inserted
      * @throws Exception
      */
-    public function insertMany(array $data): int
+    public function insertMany(array $data, bool $history = false): int
     {
         foreach ($data as &$row) {
             if (!empty($this->fillable)) {
@@ -153,17 +155,18 @@ abstract class AbstractModel
             }
         }
 
-        return intval(MySql::insert_many($this->table, $data)?->exec()?->rowCount());
+        return intval(MySql::insert_many($this->table, $data)?->exec($history)?->rowCount());
     }
 
     /**
      * Update data in database
      * @param array $data The data to update
      * @param MySql|string|array $where The where clause
+     * @param bool $history Whether to save the query history
      * @return int The number of rows updated
      * @throws Exception
      */
-    public function update(null|array $data = null, null|MySql|string|array $where = null): int
+    public function update(null|array $data = null, null|MySql|string|array $where = null, bool $history = false): int
     {
         if (is_null($data) && is_null($where) && !empty($this->primaryKey) && isset($this->data[$this->primaryKey])) {
             $data = $this->data;
@@ -176,21 +179,22 @@ abstract class AbstractModel
 
         $data = $this->beforeUpdate($data);
         $data = $this->beforeUpdateInternal($data);
-        return intval(MySql::update($this->table, $data, $where)?->exec()?->rowCount());
+        return intval(MySql::update($this->table, $data, $where)?->exec($history)?->rowCount());
     }
 
     /**
      * Delete data in database
      * @param MySql|string|array $where The where clause
+     * @param bool $history Whether to save the query history
      * @return int The number of rows deleted
      * @throws Exception
      */
-    public function delete(null|MySql|string|array $where = null): int
+    public function delete(null|MySql|string|array $where = null, bool $history = false): int
     {
         if (is_null($where) && !empty($this->primaryKey) && isset($this->data[$this->primaryKey])) {
             $where = [$this->primaryKey => $this->data[$this->primaryKey]];
         }
-        return intval(MySql::delete($this->table, $where)?->exec()?->rowCount());
+        return intval(MySql::delete($this->table, $where)?->exec($history)?->rowCount());
     }
 
     /**
