@@ -74,8 +74,8 @@ class MySqlMakeModel extends AbstractCommand
         class {ModelName} extends AbstractModel
         {
             protected \$table = '{ModelTable}';
-            protected \$fillable = null;
-            protected \$hidden = null;
+            protected \$fillable = [];
+            protected \$hidden = [];
             protected \$primaryKey = null;
         }
          
