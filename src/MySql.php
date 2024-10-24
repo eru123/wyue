@@ -204,7 +204,7 @@ class MySql
         return new static(...$args);
     }
 
-    public static function raw(string $sql, array $params = []): static
+    public static function raw(string|self $sql, array $params = []): static
     {
         return new static($sql, $params);
     }
@@ -287,10 +287,10 @@ class MySql
         $order = $order ? " ORDER BY $order" : '';
 
         $offset = static::array_get($query, ['offset', 'skip'], null);
-        $offset = $offset ? static::raw(' OFFSET ?', [$offset > 0 ? $offset : 0]) : '';
+        $offset = $offset ? static::raw(' OFFSET ?', [intval($offset > 0 ? $offset : 0)]) : '';
 
         $limit = static::array_get($query, ['limit', 'take'], null);
-        $limit = $limit ? static::raw(' LIMIT ?', [$limit]) : '';
+        $limit = $limit ? static::raw(' LIMIT ?', [intval($limit)]) : '';
 
         $join = static::array_get($query, ['join', 'joins'], null);
         $join = $join ? ' ' . static::join($join) : $join;
