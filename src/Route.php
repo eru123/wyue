@@ -244,7 +244,7 @@ class Route
      */
     public function defaultErrorHandler($routeContext, $e)
     {
-        $this->code($e->getCode());
+        $this->code(is_string($e->getCode()) ? 500 : $e->getCode());
         $res = [
             "code" => $this->httpCode,
             "error" => "Internal Server Error",
