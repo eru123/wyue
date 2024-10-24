@@ -306,6 +306,15 @@ class MySql
         return static::raw("SELECT $cols FROM " . $table . $join . $where . $group . $having . $order . $limit . $offset);
     }
 
+    public static function count(string|array|self $table, array $query)
+    {
+        unset($query['offset']);
+        unset($query['skip']);
+        unset($query['limit']);
+        unset($query['take']);
+        return static::raw("SELECT COUNT(*) FROM (" . static::select($table, $query) . ") as count_table");
+    }
+
     public static function where(array|string|self $data)
     {
         if (is_string($data) || $data instanceof self) {
