@@ -222,9 +222,9 @@ abstract class AbstractModel
      * Convert to array
      * @return array
      */
-    public function __toArray(): array
+    public function __toArray()
     {
-        return array_diff_key($this->data, array_flip($this->hidden));
+        return array_diff_key($this->data, array_flip($this->hidden ?? []));
     }
 
     /**
