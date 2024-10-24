@@ -15,7 +15,7 @@ class Vite
      * @var string Use Vite Template for production
      */
     const TEMPLATE_VITE = 'vite';
-    
+
     /**
      * @var string Use Vite Template for development
      */
@@ -45,7 +45,12 @@ class Vite
             \${head}
         </head>
         <body>
-            <div id="\${app_id}"></div>
+            <div id="\${app_id}">
+                <noscript>
+                    <h1>Not Supported</h1>
+                    <p>Please enable JavaScript to use this app.</p>
+                </noscript>
+            </div>
             \${body}
             <script type="module">
                 import RefreshRuntime from \'\${base_uri}/@react-refresh\'
@@ -75,7 +80,12 @@ class Vite
             \${head}
         </head>
         <body>
-            <div id="\${app_id}"></div>
+            <div id="\${app_id}">
+                <noscript>
+                    <h1>Not Supported</h1>
+                    <p>Please enable JavaScript to use this app.</p>
+                </noscript>
+            </div>
             \${body}
             <script type="module" src="\${base_uri}/@vite/client"></script>
             <script type="module" src="\${base_uri}/\${entry}"></script>
@@ -98,7 +108,12 @@ class Vite
             \${head}
         </head>
         <body>
-            <div id="\${app_id}"></div>
+            <div id="\${app_id}">
+                <noscript>
+                    <h1>Not Supported</h1>
+                    <p>Please enable JavaScript to use this app.</p>
+                </noscript>
+            </div>
             \${body}
             <script type="module" src="\${base_uri}/\${entry}"></script>
         </body>
@@ -479,7 +494,7 @@ class Vite
     //     }
     // }
 
-    public static function hotReloadHtml(): string 
+    public static function hotReloadHtml(): string
     {
         return preg_replace(['/ {2,}/', '/<!--.*?-->|\t|(?:\r?\n[ \t]*)+/s'], [' ', ''], <<<HTML
             <html>
