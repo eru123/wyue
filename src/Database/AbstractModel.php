@@ -107,6 +107,11 @@ abstract class AbstractModel
         return array_map(fn($row) => new static($row, $this->table), MySql::select($this->table, $query)->exec($history)?->fetchAll(PDO::FETCH_ASSOC) ?: []);
     }
 
+    public function count(array $query = [], $history = false): int
+    {
+        return intval(MySql::count($this->table, $query)->exec($history)?->fetchColumn());
+    }
+
     /**
      * Insert single row data into database
      * @param array $data The data to insert
