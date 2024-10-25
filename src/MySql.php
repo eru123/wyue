@@ -728,13 +728,13 @@ class MySql
     public static function commit()
     {
         static::pdo();
-        return static::$pdo->commit();
+        return MySql::pdo()->inTransaction() && static::$pdo->commit();
     }
 
-    public function rollback()
+    public static function rollback()
     {
         static::pdo();
-        return static::$pdo->rollBack();
+        return MySql::pdo()->inTransaction() && static::$pdo->rollBack();
     }
 
     public function close()
