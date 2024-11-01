@@ -229,7 +229,35 @@ abstract class AbstractModel
      */
     public function __toArray()
     {
+        return $this->retract($this->data);
+    }
+
+    /**
+     * Convert to array
+     * @return array
+     */
+    public function toArray()
+    {
+        return $this->retract($this->data);
+    }
+
+    /**
+     * Convert to array
+     * @return array
+     */
+    public function array()
+    {
         return array_diff_key($this->data, array_flip($this->hidden ?? []));
+    }
+
+    /**
+     * Retract hidden keys
+     * @param array $data
+     * @return array
+     */
+    public function retract(array $data): array
+    {
+        return array_diff_key($data, array_flip($this->hidden ?? []));
     }
 
     /**
