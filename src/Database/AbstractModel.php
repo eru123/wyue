@@ -247,7 +247,7 @@ abstract class AbstractModel
      */
     public function array()
     {
-        return array_diff_key($this->data, array_flip($this->hidden ?? []));
+        return $this->retract($this->data);
     }
 
     /**
