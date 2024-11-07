@@ -238,7 +238,7 @@ abstract class AbstractModel
      */
     public function toArray()
     {
-        return $this->retract($this->data);
+        return $this->__toArray();
     }
 
     /**
@@ -247,7 +247,7 @@ abstract class AbstractModel
      */
     public function array()
     {
-        return $this->retract($this->data);
+        return $this->__toArray();
     }
 
     /**
