@@ -13,7 +13,7 @@ abstract class AbstractModel
     use MySqlTraits;
 
     /**
-     * @var string The table name for this model
+     * @var string|array The table name for this model
      */
     protected $table = '';
 
@@ -57,7 +57,7 @@ abstract class AbstractModel
      * @param null|string $table The table name for this model
      * @param null|string $primaryKey The primary key for this model
      */
-    public function __construct(null|array $data = null, null|string $table = null)
+    public function __construct(null|array $data = null, null|string|array $table = null)
     {
         if (is_array($data)) {
             $this->data = $data;
