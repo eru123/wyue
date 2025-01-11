@@ -131,8 +131,8 @@ abstract class AbstractModel
 
         $data = $this->beforeInsert($data);
         $data = $this->beforeInsertInternal($data);
-
-        if (!!MySql::insert($this->table, $data)?->exec($history)?->rowCount()) {
+        
+        if (!!MySql::insert(is_array($this->table) ? $this->table[0] : $this->table , $data)?->exec($history)?->rowCount()) {
             $id = MySql::id();
             if (!$this->primaryKey) {
                 $this->data[$this->primaryKey] = $id;
