@@ -131,8 +131,8 @@ abstract class AbstractModel
 
         $data = $this->beforeInsert($data);
         $data = $this->beforeInsertInternal($data);
-        
-        if (!!MySql::insert(is_array($this->table) ? $this->table[0] : $this->table , $data)?->exec($history)?->rowCount()) {
+
+        if (!!MySql::insert(is_array($this->table) ? $this->table[0] : $this->table, $data)?->exec($history)?->rowCount()) {
             $id = MySql::id();
             if (!$this->primaryKey) {
                 $this->data[$this->primaryKey] = $id;
@@ -160,7 +160,7 @@ abstract class AbstractModel
             }
         }
 
-        return intval(MySql::insert_many($this->table, $data)?->exec($history)?->rowCount());
+        return intval(MySql::insert_many(is_array($this->table) ? $this->table[0] : $this->table, $data)?->exec($history)?->rowCount());
     }
 
     /**
@@ -184,7 +184,7 @@ abstract class AbstractModel
 
         $data = $this->beforeUpdate($data);
         $data = $this->beforeUpdateInternal($data);
-        return intval(MySql::update($this->table, $data, $where)?->exec($history)?->rowCount());
+        return intval(MySql::update(is_array($this->table) ? $this->table[0] : $this->table, $data, $where)?->exec($history)?->rowCount());
     }
 
     /**
@@ -199,7 +199,7 @@ abstract class AbstractModel
         if (is_null($where) && !empty($this->primaryKey) && isset($this->data[$this->primaryKey])) {
             $where = [$this->primaryKey => $this->data[$this->primaryKey]];
         }
-        return intval(MySql::delete($this->table, $where)?->exec($history)?->rowCount());
+        return intval(MySql::delete(is_array($this->table) ? $this->table[0] : $this->table, $where)?->exec($history)?->rowCount());
     }
 
     /**
@@ -210,7 +210,7 @@ abstract class AbstractModel
      */
     public function hasColumn(string $column): bool
     {
-        return MySql::raw("SHOW COLUMNS FROM {$this->table} LIKE '{$column}'")->exec()?->rowCount() > 0;
+        return MySql::raw("SHOW COLUMNS FROM `" . (is_array($this->table) ? $this->table[0] : $this->table) . "` LIKE '{$column}'")->exec()?->rowCount() > 0;
     }
 
     /**
@@ -220,7 +220,7 @@ abstract class AbstractModel
      */
     public function exists(): bool
     {
-        return MySql::raw("SHOW TABLES LIKE '{$this->table}'")->exec()?->rowCount() > 0;
+        return MySql::raw("SHOW TABLES LIKE '" . (is_array($this->table) ? $this->table[0] : $this->table) . "'")->exec()?->rowCount() > 0;
     }
 
     /**
