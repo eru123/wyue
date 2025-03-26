@@ -2,12 +2,11 @@
 
 namespace Wyue\Database;
 
-use Exception;
-use Wyue\Str;
-use Wyue\Commands\CLI;
 use Wyue\Commands\AbstractCommand;
+use Wyue\Commands\CLI;
 use Wyue\Format;
 use Wyue\MySql;
+use Wyue\Str;
 
 class MySqlMakeModel extends AbstractCommand
 {
@@ -34,7 +33,7 @@ class MySqlMakeModel extends AbstractCommand
         $table = Str::pascal_case_to_snake_case($classname);
 
         if (!$classname) {
-            throw new Exception('Make Model Error: Class name is required');
+            throw new \Exception('Make Model Error: Class name is required');
         }
 
         $namespace = MySql::getModelsNamespace();
@@ -42,29 +41,29 @@ class MySqlMakeModel extends AbstractCommand
 
         if (!is_dir($dir)) {
             if (!mkdir($dir, 0777, true)) {
-                throw new Exception('Make Model Error: Can\'t create model directory');
+                throw new \Exception('Make Model Error: Can\'t create model directory');
             }
         }
 
         if (!is_writable($dir)) {
-            throw new Exception('Make Model Error: Can\'t write to model directory');
+            throw new \Exception('Make Model Error: Can\'t write to model directory');
         }
 
         $dir = realpath($dir);
 
         if (!$dir || !is_dir($dir)) {
-            throw new Exception('Make Model Error: Failed to get absolute path of models directory or \'' . MySql::getModelsPath() . '\' is not a directory');
+            throw new \Exception('Make Model Error: Failed to get absolute path of models directory or \''.MySql::getModelsPath().'\' is not a directory');
         }
 
-        $file = $dir . DIRECTORY_SEPARATOR . $classname . ".php";
+        $file = $dir.DIRECTORY_SEPARATOR.$classname.'.php';
 
         if (file_exists($file) && $this->flag('f|force')) {
             unlink($file);
-        } else if (file_exists($file)) {
-            throw new Exception("Model already exists");
+        } elseif (file_exists($file)) {
+            throw new \Exception('Model already exists');
         }
 
-        $tpl = <<<PHP
+        $tpl = <<<'PHP'
         <?php
 
         namespace {ModelNamespace};
@@ -73,10 +72,10 @@ class MySqlMakeModel extends AbstractCommand
 
         class {ModelName} extends AbstractModel
         {
-            protected \$table = '{ModelTable}';
-            protected \$fillable = [];
-            protected \$hidden = [];
-            protected \$primaryKey = null;
+            protected $table = '{ModelTable}';
+            protected $fillable = [];
+            protected $hidden = [];
+            protected $primaryKey = null;
         }
          
         PHP;
@@ -84,18 +83,19 @@ class MySqlMakeModel extends AbstractCommand
         $content = Format::template($tpl, [
             'ModelNamespace' => $namespace,
             'ModelName' => $classname,
-            'ModelTable' => $table
+            'ModelTable' => $table,
         ], FORMAT_TEMPLATE_CURLY);
 
         $success = file_put_contents($file, $content);
 
         if ($success) {
-            CLI::success("SUCCESS: Model file created");
-            CLI::success("Class: $namespace\\$classname");
-            CLI::success("File: " . $file);
+            CLI::success('SUCCESS: Model file created');
+            CLI::success("Class: {$namespace}\\{$classname}");
+            CLI::success('File: '.$file);
+
             exit(0);
-        } else {
-            throw new Exception('Make Model Error: Failed to create model file');
         }
+
+        throw new \Exception('Make Model Error: Failed to create model file');
     }
 }

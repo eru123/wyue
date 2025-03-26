@@ -63,26 +63,33 @@ class Format
             case FORMAT_NUMBER_BYTE:
                 foreach ($bytes_units as $unit => $value) {
                     if ($int >= $value) {
-                        return $trailing_zero ? Number::div($int, $value, $precision) . $unit : preg_replace('/\.?0+$/', '', Number::div($int, $value, $precision)) . $unit;
+                        return $trailing_zero ? Number::div($int, $value, $precision).$unit : preg_replace('/\.?0+$/', '', Number::div($int, $value, $precision)).$unit;
                     }
                 }
+
                 return $int;
+
             case FORMAT_NUMBER_BIT:
                 foreach ($bits_units as $unit => $value) {
                     if ($int >= $value) {
-                        return $trailing_zero ? Number::div($int, $value, $precision) . $unit : preg_replace('/\.?0+$/', '', Number::div($int, $value, $precision)) . $unit;
+                        return $trailing_zero ? Number::div($int, $value, $precision).$unit : preg_replace('/\.?0+$/', '', Number::div($int, $value, $precision)).$unit;
                     }
                 }
+
                 return $int;
+
             case FORMAT_NUMBER_UNIT:
                 foreach ($units as $unit => $value) {
                     if ($int >= $value) {
-                        return $trailing_zero ? Number::div($int, $value, $precision) . $unit : preg_replace('/\.?0+$/', '', Number::div($int, $value, $precision)) . $unit;
+                        return $trailing_zero ? Number::div($int, $value, $precision).$unit : preg_replace('/\.?0+$/', '', Number::div($int, $value, $precision)).$unit;
                     }
                 }
+
                 return $int;
+
             case FORMAT_NUMBER_PRECISION:
                 return $trailing_zero ? Number::round($int, $precision) : preg_replace('/\.?0+$/', '', Number::round($int, $precision));
+
             default:
                 return $int;
         }
@@ -112,6 +119,7 @@ class Format
         foreach ($keys as $key) {
             $values[] = isset($params[$key]) ? $params[$key] : '';
         }
+
         return str_replace($matches[0], $values, $template);
     }
 
@@ -127,8 +135,9 @@ class Format
         extract($params);
         $values = [];
         foreach ($matches[1] as $match) {
-            $values[] = eval('return ' . $match . ';');
+            $values[] = eval('return '.$match.';');
         }
+
         return str_replace($matches[0], $values, $template);
     }
 }

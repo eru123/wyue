@@ -2,15 +2,13 @@
 
 namespace Wyue\Database;
 
-use Exception;
-use Wyue\Date;
-use Wyue\Str;
-use Wyue\Commands\CLI;
 use Wyue\Commands\AbstractCommand;
-use Wyue\Database\AbstractMigration;
+use Wyue\Commands\CLI;
+use Wyue\Date;
+use Wyue\Exceptions\InvalidCommandException;
 use Wyue\Format;
 use Wyue\MySql;
-use Wyue\Exceptions\InvalidCommandException;
+use Wyue\Str;
 
 class MySqlMakeMigration extends AbstractCommand
 {
@@ -37,7 +35,7 @@ class MySqlMakeMigration extends AbstractCommand
     {
         $timestamp = Date::getTimestamp();
         $classname = $this->arg('name');
-        $fclassnme = "Wyue\Migrations\\" . strval($classname);
+        $fclassnme = 'Wyue\\Migrations\\'.strval($classname);
         $filemname = Str::pascal_case_to_snake_case(strval($classname));
         $cabstract = AbstractMigration::class;
         $eabstract = explode('\\', $cabstract);
@@ -52,38 +50,39 @@ class MySqlMakeMigration extends AbstractCommand
         }
 
         $dir = $this->getMigrationsDirectory();
-        $file = $dir . DIRECTORY_SEPARATOR . "{$timestamp}_{$filemname}.php";
+        $file = $dir.DIRECTORY_SEPARATOR."{$timestamp}_{$filemname}.php";
 
         if ($this->flag('V|verbose')) {
-            CLI::info("Checking new migration file if exists: " . $file);
+            CLI::info('Checking new migration file if exists: '.$file);
         }
 
         if (file_exists($file) && !$this->flag('f|force')) {
-            throw new Exception('Make Migration Error: Migration file already exists');
+            throw new \Exception('Make Migration Error: Migration file already exists');
         }
 
         if ($this->flag('V|verbose')) {
-            CLI::info("Checking migrations folder: " . $dir);
+            CLI::info('Checking migrations folder: '.$dir);
         }
 
-        $files = glob($dir . DIRECTORY_SEPARATOR . '*.php');
+        $files = glob($dir.DIRECTORY_SEPARATOR.'*.php');
         foreach ($files as $f) {
             $fn = basename($f);
-            $rgx = preg_match("/^([0-9]+)_([a-z_]+)\.php$/", $fn, $matches);
+            $rgx = preg_match('/^([0-9]+)_([a-z_]+)\\.php$/', $fn, $matches);
             if ($rgx) {
                 $cn = $matches[2];
                 if ($cn == Str::pascal_case_to_snake_case($classname)) {
-                    throw new Exception('Make Migration Error: Class name already exists: ' . $fn);
+                    throw new \Exception('Make Migration Error: Class name already exists: '.$fn);
                 }
+
                 require_once $f;
             }
         }
 
         if ($this->flag('V|verbose')) {
-            CLI::info("Migration class checking: " . $fclassnme);
+            CLI::info('Migration class checking: '.$fclassnme);
         }
 
-        $content = <<<PHP
+        $content = <<<'PHP'
         <?php
 
         namespace Wyue\Migrations;
@@ -102,26 +101,27 @@ class MySqlMakeMigration extends AbstractCommand
                 // TODO: Implement down() method.
             }
         }
-        PHP . PHP_EOL;
+        PHP.PHP_EOL;
 
         $success = file_put_contents($file, Format::template($content, [
             'ClassName' => $classname,
             'UseAbstractMigration' => $cabstract,
-            'AbstractMigration' => $nabstract
+            'AbstractMigration' => $nabstract,
         ], FORMAT_TEMPLATE_CURLY));
 
         if ($success) {
-            CLI::success("SUCCESS: Migration file created");
-            CLI::success("Class: " . $fclassnme);
-            CLI::success("File: " . $file);
+            CLI::success('SUCCESS: Migration file created');
+            CLI::success('Class: '.$fclassnme);
+            CLI::success('File: '.$file);
 
             if ($this->flag('m|model')) {
                 $this->createModel($classname, $this->opt('t|table', $filemname));
             }
+
             exit(0);
-        } else {
-            throw new Exception('Make Migration Error: Failed to create migration file');
         }
+
+        throw new \Exception('Make Migration Error: Failed to create migration file');
     }
 
     public function createModel(string $classname, string $table)
@@ -130,23 +130,23 @@ class MySqlMakeMigration extends AbstractCommand
         $dir = MySql::getModelsPath();
         if (!is_dir($dir)) {
             if (!mkdir($dir, 0777, true)) {
-                throw new Exception('Make Model Error: Can\'t create model directory');
+                throw new \Exception('Make Model Error: Can\'t create model directory');
             }
         }
 
         if (!is_writable($dir)) {
-            throw new Exception('Make Model Error: Can\'t write to model directory');
+            throw new \Exception('Make Model Error: Can\'t write to model directory');
         }
 
         $dir = realpath($dir);
 
         if (!$dir || !is_dir($dir)) {
-            throw new Exception('Make Model Error: Failed to get absolute path of models directory or \'' . MySql::getModelsPath() . '\' is not a directory');
+            throw new \Exception('Make Model Error: Failed to get absolute path of models directory or \''.MySql::getModelsPath().'\' is not a directory');
         }
 
-        $file = $dir . DIRECTORY_SEPARATOR . $classname . ".php";
+        $file = $dir.DIRECTORY_SEPARATOR.$classname.'.php';
 
-        $tpl = <<<PHP
+        $tpl = <<<'PHP'
         <?php
 
         namespace {ModelNamespace};
@@ -155,10 +155,10 @@ class MySqlMakeMigration extends AbstractCommand
 
         class {ModelName} extends AbstractModel
         {
-            protected \$table = '{ModelTable}';
-            protected \$fillable = [];
-            protected \$hidden = [];
-            protected \$primaryKey = null;
+            protected $table = '{ModelTable}';
+            protected $fillable = [];
+            protected $hidden = [];
+            protected $primaryKey = null;
         }
          
         PHP;
@@ -166,18 +166,19 @@ class MySqlMakeMigration extends AbstractCommand
         $content = Format::template($tpl, [
             'ModelNamespace' => $namespace,
             'ModelName' => $classname,
-            'ModelTable' => $table
+            'ModelTable' => $table,
         ], FORMAT_TEMPLATE_CURLY);
 
         $success = file_put_contents($file, $content);
 
         if ($success) {
             CLI::success("\nSUCCESS: Model file created");
-            CLI::success("Class: $namespace\\$classname");
-            CLI::success("File: " . $file);
+            CLI::success("Class: {$namespace}\\{$classname}");
+            CLI::success('File: '.$file);
+
             exit(0);
-        } else {
-            throw new Exception('Make Model Error: Failed to create model file');
         }
+
+        throw new \Exception('Make Model Error: Failed to create model file');
     }
 }

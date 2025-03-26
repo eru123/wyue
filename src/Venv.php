@@ -2,20 +2,20 @@
 
 namespace Wyue;
 
-use Exception;
-
 class Venv
 {
     protected static $venv = [];
 
     /**
-     * Get specific key from Array or all keys
-     * @param array $array The array to get key from
-     * @param string|array|null $key The key to get or null to get all keys
-     * @param mixed $default The default value to return if key not found
+     * Get specific key from Array or all keys.
+     *
+     * @param array             $array   The array to get key from
+     * @param null|array|string $key     The key to get or null to get all keys
+     * @param mixed             $default The default value to return if key not found
+     *
      * @return mixed
      */
-    public static function _get(array $array, string|array|null $key = null, $default = null)
+    public static function _get(array $array, null|array|string $key = null, $default = null)
     {
         if (is_array($key)) {
             foreach ($key as $k) {
@@ -24,6 +24,7 @@ class Venv
                     return $tmp;
                 }
             }
+
             return $default;
         }
 
@@ -42,6 +43,7 @@ class Venv
                 if (is_array($value)) {
                     $value = static::_get($value, $key);
                 }
+
                 return $value;
             }, $key) !== $key
         ) {
@@ -51,6 +53,7 @@ class Venv
                 if (is_array($value)) {
                     $value = static::_get($value, $key);
                 }
+
                 return $value;
             }, $key);
         }
@@ -66,10 +69,12 @@ class Venv
     }
 
     /**
-     * Set key-value pair to Array
-     * @param array $array The array to set key-value pair
-     * @param string $key The key to set, can be dot notation
-     * @param mixed $value The value to set
+     * Set key-value pair to Array.
+     *
+     * @param array  $array The array to set key-value pair
+     * @param string $key   The key to set, can be dot notation
+     * @param mixed  $value The value to set
+     *
      * @return array
      */
     public static function _set(array &$array, string $key, $value)
@@ -85,6 +90,7 @@ class Venv
                 if (is_array($value)) {
                     $value = self::_get($value, $key);
                 }
+
                 return $value;
             }, $key) !== $key
         ) {
@@ -94,6 +100,7 @@ class Venv
                 if (is_array($value)) {
                     $value = self::_get($value, $key);
                 }
+
                 return $value;
             }, $key);
         }
@@ -116,9 +123,11 @@ class Venv
     }
 
     /**
-     * Check if key exists in Array
-     * @param array $array The array to check key exists
-     * @param string $key The key to check, can be dot notation
+     * Check if key exists in Array.
+     *
+     * @param array  $array The array to check key exists
+     * @param string $key   The key to check, can be dot notation
+     *
      * @return bool
      */
     public static function has(array $array, string $key)
@@ -142,9 +151,11 @@ class Venv
     }
 
     /**
-     * Remove key-value pair from Array
-     * @param array $array The array to remove key-value pair from
-     * @param string $key The key to remove, can be dot notation
+     * Remove key-value pair from Array.
+     *
+     * @param array  $array The array to remove key-value pair from
+     * @param string $key   The key to remove, can be dot notation
+     *
      * @return array
      */
     public static function forget(array &$array, string $key)
@@ -155,6 +166,7 @@ class Venv
 
         if (array_key_exists($key, $array)) {
             unset($array[$key]);
+
             return $array;
         }
 
@@ -176,10 +188,10 @@ class Venv
     }
 
     /**
-     * Set key-value pair to virtual env
-     * @param string $key The key to set, can be dot notation
-     * @param mixed $value The value to set
-     * @return void
+     * Set key-value pair to virtual env.
+     *
+     * @param string $key   The key to set, can be dot notation
+     * @param mixed  $value The value to set
      */
     public static function set(string $key, $value): void
     {
@@ -191,20 +203,22 @@ class Venv
     }
 
     /**
-     * Get specific key from virtual env or all keys
-     * @param string|array|null $key The key to get or null to get all keys
-     * @param mixed $default The default value to return if key not found
+     * Get specific key from virtual env or all keys.
+     *
+     * @param null|array|string $key     The key to get or null to get all keys
+     * @param mixed             $default The default value to return if key not found
+     *
      * @return mixed
      */
-    public static function get(string|array|null $key = null, $default = null)
+    public static function get(null|array|string $key = null, $default = null)
     {
         return self::_get(static::$venv, $key, $default);
     }
 
     /**
-     * Move all key-value pair from $_ENV to virtual env
+     * Move all key-value pair from $_ENV to virtual env.
+     *
      * @param bool $copyOnly Allow copying of env but do not remove them
-     * @return void
      */
     public static function protect(bool $copyOnly = false): void
     {
@@ -227,21 +241,22 @@ class Venv
     }
 
     /**
-     * Load .env file from path or directory to virtual env
+     * Load .env file from path or directory to virtual env.
      */
-    public static function load_env(string|null|array $path, bool $strict = true, bool|string $env_mode = false): array|false
+    public static function load_env(null|array|string $path, bool $strict = true, bool|string $env_mode = false): array|false
     {
         if (is_array($path)) {
             foreach ($path as $k => $v) {
                 static::set($k, $v);
             }
+
             return static::get();
         }
 
         $path = realpath($path);
 
         if (!$path && $strict) {
-            throw new Exception('Invalid path: ' . htmlspecialchars($path));
+            throw new \Exception('Invalid path: '.htmlspecialchars($path));
         }
 
         if (!$path) {
@@ -253,8 +268,8 @@ class Venv
             $files = scandir($path);
             if ($files && !empty($env_mode)) {
                 foreach ($files as $file) {
-                    if (preg_match("/^$env_mode(\..*)\.env$/i", $file)) {
-                        $envf[] = $path . DIRECTORY_SEPARATOR . $file;
+                    if (preg_match("/^{$env_mode}(\\..*)\\.env$/i", $file)) {
+                        $envf[] = $path.DIRECTORY_SEPARATOR.$file;
                     }
                 }
             }
@@ -277,8 +292,8 @@ class Venv
                     }
 
                     static::set(...static::env_parse_line($line, $strict));
-                } catch (Exception $e) {
-                    !$strict || throw new Exception("Error parsing $f file: " . $e->getMessage());
+                } catch (\Exception $e) {
+                    !$strict || throw new \Exception("Error parsing {$f} file: ".$e->getMessage());
                 }
             }
         }
@@ -287,12 +302,12 @@ class Venv
     }
 
     /**
-     * Parse line from .env file
+     * Parse line from .env file.
      */
     public static function env_parse_line(string $line, bool $strict = false): array
     {
         $linearr = explode('=', $line, 2);
-        if (count($linearr) === 1) {
+        if (1 === count($linearr)) {
             return [$linearr[0], ''];
         }
         list($name, $value) = $linearr;
@@ -300,7 +315,7 @@ class Venv
         $value = trim(strval($value));
 
         if ($strict && preg_match('/[^a-z0-9_.]/i', $name)) {
-            throw new Exception("Invalid environment variable name: {$name}");
+            throw new \Exception("Invalid environment variable name: {$name}");
         }
 
         if (preg_match('/^(true|false|null|\d+|\d+.\d+)$/i', $value)) {
@@ -309,7 +324,7 @@ class Venv
 
         $value = preg_replace_callback('/\${([a-z0-9_.]+)}/i', function ($matches) use ($strict) {
             if (is_null(static::get($matches[1])) && $strict) {
-                throw new Exception("Environment variable [{$matches[1]}] not found.");
+                throw new \Exception("Environment variable [{$matches[1]}] not found.");
             }
 
             return static::get($matches[1], '');
@@ -325,9 +340,7 @@ class Venv
     }
 
     /**
-     * Merge array to virtual env
-     * @param array ...$array
-     * @return void
+     * Merge array to virtual env.
      */
     public static function venv_merge(array ...$array): void
     {
@@ -335,7 +348,7 @@ class Venv
             if (!is_array($arr) || array_keys($arr) !== range(0, count($arr) - 1)) {
                 continue;
             }
-            
+
             foreach ($arr as $k => $v) {
                 static::$venv[$k] = $v;
             }

@@ -2,28 +2,24 @@
 
 namespace Wyue;
 
-use PDO;
-use PDOStatement;
-
 class MySql
 {
-    protected $query = null;
+    /**
+     * @var \PDOStatement
+     */
+    public $stmt;
+    protected $query;
 
     /**
-     * @var PDO
+     * @var \PDO
      */
-    protected static $pdo = null;
-
-    /**
-     * @var PDOStatement
-     */
-    public $stmt = null;
-    private $error = null;
-    private $executed = false;
+    protected static $pdo;
 
     protected static $history = [];
     protected static $columns = [];
-    protected static $my_config = null;
+    protected static $my_config;
+    private $error;
+    private $executed = false;
 
     public function __construct(protected string $sql, protected array $params = [])
     {
@@ -35,7 +31,7 @@ class MySql
                 $idxl = count($params);
                 foreach ($params as $index => $param) {
                     $idxkey = str_pad($index, strlen($idxl), '0', STR_PAD_LEFT);
-                    $param_key = ':p__' . $idxkey;
+                    $param_key = ':p__'.$idxkey;
                     $this->query = preg_replace('/\?/', $param_key, $this->query, 1);
                     $tmp_params[$param_key] = $param;
                 }
@@ -52,18 +48,28 @@ class MySql
                     $value = 'NULL';
                 } elseif (is_bool($param)) {
                     $value = $param ? 1 : 0;
-                } else if (is_array($param)) {
+                } elseif (is_array($param)) {
                     $value = static::in($param);
                 } else {
-                    $value = "'" . addslashes($param) . "'";
+                    $value = "'".addslashes($param)."'";
                 }
 
-                $this->query = str_replace(":$key", $value, $this->query);
+                $this->query = str_replace(":{$key}", $value, $this->query);
             }
         }
     }
 
-    public static function array_get(array $array, string|array|null $key = null, $default = null)
+    public function __toString(): string
+    {
+        return $this->query ?? $this->sql;
+    }
+
+    public function __invoke(): string
+    {
+        return $this->__toString();
+    }
+
+    public static function array_get(array $array, null|array|string $key = null, $default = null)
     {
         if (is_array($key)) {
             foreach ($key as $k) {
@@ -72,6 +78,7 @@ class MySql
                     return $tmp;
                 }
             }
+
             return $default;
         }
 
@@ -90,6 +97,7 @@ class MySql
                 if (is_array($value)) {
                     $value = static::array_get($value, $key);
                 }
+
                 return $value;
             }, $key) !== $key
         ) {
@@ -99,6 +107,7 @@ class MySql
                 if (is_array($value)) {
                     $value = static::array_get($value, $key);
                 }
+
                 return $value;
             }, $key);
         }
@@ -126,6 +135,7 @@ class MySql
                 if (is_array($value)) {
                     $value = static::array_get($value, $key);
                 }
+
                 return $value;
             }, $key) !== $key
         ) {
@@ -135,6 +145,7 @@ class MySql
                 if (is_array($value)) {
                     $value = static::array_get($value, $key);
                 }
+
                 return $value;
             }, $key);
         }
@@ -156,12 +167,12 @@ class MySql
         return $array;
     }
 
-    static function is_array($value)
+    public static function is_array($value)
     {
         return array_keys($value) === range(0, count($value) - 1);
     }
 
-    public static function myConfig(string|array $key, $default = null)
+    public static function myConfig(array|string $key, $default = null)
     {
         return static::array_get(static::$my_config, $key, $default);
     }
@@ -191,20 +202,12 @@ class MySql
         return static::array_get(static::$my_config, ['models_namespace'], 'App\Models');
     }
 
-    public function __toString(): string
-    {
-        return $this->query ?? $this->sql;
-    }
-    public function __invoke(): string
-    {
-        return $this->__toString();
-    }
     public static function build(...$args): static
     {
         return new static(...$args);
     }
 
-    public static function raw(string|self $sql, array $params = []): static
+    public static function raw(self|string $sql, array $params = []): static
     {
         return new static($sql, $params);
     }
@@ -214,32 +217,34 @@ class MySql
         return static::$history;
     }
 
-    public static function columns(string|array $names, $wrapper = '`'): static
+    public static function columns(array|string $names, $wrapper = '`'): static
     {
-        if (empty($names))
+        if (empty($names)) {
             return new static('');
+        }
         if (!is_array($names)) {
             $names = [$names];
         }
 
         if (static::is_array($names)) {
-            $sql = $wrapper . implode("{$wrapper}, {$wrapper}", array_values($names)) . $wrapper;
-            return new static($sql);
-        } else {
-            $selects = [];
-            foreach ($names as $alias => $name) {
-                $name = preg_replace('/\./', "{$wrapper}.{$wrapper}", $name);
-                if (is_numeric($alias)) {
-                    $selects[] = "{$wrapper}{$name}{$wrapper}";
-                } else {
-                    $name = preg_match('/\(/', $name) ? new static($name) : "{$wrapper}{$name}{$wrapper}";
-                    $selects[] = "{$name} AS {$wrapper}{$alias}{$wrapper}";
-                }
-            }
+            $sql = $wrapper.implode("{$wrapper}, {$wrapper}", array_values($names)).$wrapper;
 
-            $sql = implode(', ', $selects);
             return new static($sql);
         }
+        $selects = [];
+        foreach ($names as $alias => $name) {
+            $name = preg_replace('/\./', "{$wrapper}.{$wrapper}", $name);
+            if (is_numeric($alias)) {
+                $selects[] = "{$wrapper}{$name}{$wrapper}";
+            } else {
+                $name = preg_match('/\(/', $name) ? new static($name) : "{$wrapper}{$name}{$wrapper}";
+                $selects[] = "{$name} AS {$wrapper}{$alias}{$wrapper}";
+            }
+        }
+
+        $sql = implode(', ', $selects);
+
+        return new static($sql);
     }
 
     public static function in(array $values): static
@@ -247,30 +252,34 @@ class MySql
         $sql = implode(', ', array_map(function ($value) {
             if ($value instanceof static) {
                 return $value;
-            } elseif (is_numeric($value)) {
-                return $value;
-            } elseif (is_null($value)) {
-                return 'NULL';
-            } elseif (is_bool($value)) {
-                return $value ? 1 : 0;
-            } else {
-                return "'" . addslashes(strval($value)) . "'";
             }
+            if (is_numeric($value)) {
+                return $value;
+            }
+            if (is_null($value)) {
+                return 'NULL';
+            }
+            if (is_bool($value)) {
+                return $value ? 1 : 0;
+            }
+
+            return "'".addslashes(strval($value))."'";
         }, $values));
 
         return new static("({$sql})");
     }
 
-    public static function table(string|self $name, ?string $alias = null): static
+    public static function table(self|string $name, ?string $alias = null): static
     {
         $sql = static::select_table($name);
         if ($alias) {
             $sql .= " AS `{$alias}`";
         }
+
         return new static($sql);
     }
 
-    public static function select(string|array|self $table, array $query)
+    public static function select(array|self|string $table, array $query)
     {
         $table = is_array($table) ? static::table(...$table) : ($table instanceof static ? $table : static::table($table));
         $cols = static::array_get($query, ['columns', 'column', 'col', 'cols', 'select'], '*');
@@ -280,11 +289,11 @@ class MySql
 
         $where = static::array_get($query, ['where'], null);
         $where = $where ? static::where($where) : $where;
-        $where = $where ? " WHERE $where" : '';
+        $where = $where ? " WHERE {$where}" : '';
 
         $order = static::array_get($query, ['order', 'orderby', 'sort', 'sortby'], null);
         $order = $order ? static::order($order) : $order;
-        $order = $order ? " ORDER BY $order" : '';
+        $order = $order ? " ORDER BY {$order}" : '';
 
         $offset = static::array_get($query, ['offset', 'skip'], null);
         $offset = $offset ? static::raw(' OFFSET ?', [intval($offset > 0 ? $offset : 0)]) : '';
@@ -293,29 +302,27 @@ class MySql
         $limit = $limit ? static::raw(' LIMIT ?', [intval($limit)]) : '';
 
         $join = static::array_get($query, ['join', 'joins'], null);
-        $join = $join ? ' ' . static::join($join) : $join;
+        $join = $join ? ' '.static::join($join) : $join;
 
         $group = static::array_get($query, ['group', 'groupby'], null);
         $group = $group ? (is_array($group) ? static::columns($group) : $group) : $group;
-        $group = $group ? " GROUP BY $group" : '';
+        $group = $group ? " GROUP BY {$group}" : '';
 
         $having = static::array_get($query, ['having'], null);
         $having = $having ? static::where($having) : $having;
-        $having = $having ? " HAVING $having" : '';
+        $having = $having ? " HAVING {$having}" : '';
 
-        return static::raw("SELECT $cols FROM " . $table . $join . $where . $group . $having . $order . $limit . $offset);
+        return static::raw("SELECT {$cols} FROM ".$table.$join.$where.$group.$having.$order.$limit.$offset);
     }
 
-    public static function count(string|array|self $table, array $query)
+    public static function count(array|self|string $table, array $query)
     {
-        unset($query['offset']);
-        unset($query['skip']);
-        unset($query['limit']);
-        unset($query['take']);
-        return static::raw("SELECT COUNT(*) FROM (" . static::select($table, $query) . ") as count_table");
+        unset($query['offset'], $query['skip'], $query['limit'], $query['take']);
+
+        return static::raw('SELECT COUNT(*) FROM ('.static::select($table, $query).') as count_table');
     }
 
-    public static function where(array|string|self $data)
+    public static function where(array|self|string $data)
     {
         if (is_string($data) || $data instanceof self) {
             return is_string($data) ? static::raw($data) : $data;
@@ -326,10 +333,10 @@ class MySql
             $cond = false;
             $adjective = 'AND';
 
-            if (gettype($key) === 'integer') {
+            if ('integer' === gettype($key)) {
                 if (is_string($value) || $value instanceof self) {
                     $cond = $data;
-                } else if (is_array($value)) {
+                } elseif (is_array($value)) {
                     $cond = static::raw('(?)', [static::where($value)]);
                 } else {
                     continue;
@@ -345,7 +352,7 @@ class MySql
                     foreach ($value as $operator => $v) {
                         $adj = 'AND';
                         $cnd = false;
-                        if (gettype($operator) === 'integer') {
+                        if ('integer' === gettype($operator)) {
                             continue;
                         }
                         if (count($sub) > 0 && preg_match('/^(and|or|not)\s+/i', $operator, $matches)) {
@@ -377,18 +384,18 @@ class MySql
                             preg_replace_callback('/^([a-z0-9_]+)\.([a-z0-9_]+)$/i', function ($matches) use (&$keysql) {
                                 $keysql = "`{$matches[1]}`.`{$matches[2]}`";
                             }, $key);
-                        } else if (preg_match('/^([a-z0-9_]+)$/i', $key)) {
+                        } elseif (preg_match('/^([a-z0-9_]+)$/i', $key)) {
                             preg_replace_callback('/^([a-z0-9_]+)$/i', function ($matches) use (&$keysql) {
                                 $keysql = "`{$matches[1]}`";
                             }, $key);
-                        } else if (preg_match("/^([a-z0-9_]+)(\s+)?\((.+)\)$/i", $key)) {
-                            preg_replace_callback("/^([a-z0-9_]+)(\s+)?\((.+)\)$/i", function ($matches) use (&$keysql) {
+                        } elseif (preg_match('/^([a-z0-9_]+)(\\s+)?\\((.+)\\)$/i', $key)) {
+                            preg_replace_callback('/^([a-z0-9_]+)(\\s+)?\\((.+)\\)$/i', function ($matches) use (&$keysql) {
                                 $fun = strtoupper($matches[1]);
                                 if (preg_match('/^([a-z0-9_]+)\.([a-z0-9_]+)$/i', $matches[3])) {
                                     preg_replace_callback('/^([a-z0-9_]+)\.([a-z0-9_]+)$/i', function ($matches) use (&$keysql, &$fun) {
                                         $keysql = "{$fun}(`{$matches[1]}`.`{$matches[2]}`)";
                                     }, $matches[3]);
-                                } else if (preg_match('/^([a-z0-9_]+)$/i', $matches[3])) {
+                                } elseif (preg_match('/^([a-z0-9_]+)$/i', $matches[3])) {
                                     preg_replace_callback('/^([a-z0-9_]+)$/i', function ($matches) use (&$keysql, &$fun) {
                                         $keysql = "{$fun}(`{$matches[1]}`)";
                                     }, $matches[3]);
@@ -397,7 +404,6 @@ class MySql
                                 }
                             }, $key);
                         }
-
 
                         // preg_replace_callback('/^([a-z0-9_]+)$/i', function ($matches) use (&$keysql) {
                         //     $keysql = "`{$matches[1]}`";
@@ -409,11 +415,11 @@ class MySql
 
                         if (in_array($operator, ['BETWEEN', 'NOT BETWEEN'])) {
                             $cnd = static::raw("{$keysql} {$operator} ? AND ?", $v);
-                        } else if (in_array($operator, ['IN', 'NOT IN'])) {
-                            $cnd = static::raw("{$keysql} {$operator} ?", [(is_array($v) ? $v : [$v])]);
-                        } else if (is_null($v) && in_array($operator, ['IS', 'IS NOT'])) {
+                        } elseif (in_array($operator, ['IN', 'NOT IN'])) {
+                            $cnd = static::raw("{$keysql} {$operator} ?", [is_array($v) ? $v : [$v]]);
+                        } elseif (is_null($v) && in_array($operator, ['IS', 'IS NOT'])) {
                             $cnd = static::raw("{$keysql} {$operator} NULL");
-                        } else if (is_null($v)) {
+                        } elseif (is_null($v)) {
                             $cnd = static::raw("{$keysql} IS NULL");
                         } else {
                             $cnd = static::raw("{$keysql} {$operator} ?", [$v]);
@@ -426,13 +432,13 @@ class MySql
                         $sub[] = $cnd;
                     }
 
-                    if (count($sub) === 1) {
+                    if (1 === count($sub)) {
                         $cond = $sub[0];
-                    } else if (count($sub) > 1) {
-                        $cond = '(' . implode(' ', $sub) . ')';
+                    } elseif (count($sub) > 1) {
+                        $cond = '('.implode(' ', $sub).')';
                     }
                 } else {
-                    $cond = static::raw('`' . $key . '` = ?', [$value]);
+                    $cond = static::raw('`'.$key.'` = ?', [$value]);
                 }
             }
 
@@ -451,7 +457,7 @@ class MySql
         return false;
     }
 
-    public static function order(array|string|self $data)
+    public static function order(array|self|string $data)
     {
         if (is_string($data) || $data instanceof self) {
             return $data;
@@ -460,10 +466,10 @@ class MySql
         $build = [];
         foreach ($data as $key => $value) {
             $adjective = 'ASC';
-            if (gettype($key) === 'integer') {
+            if ('integer' === gettype($key)) {
                 if (is_string($value) || $value instanceof self) {
                     $build[] = $value;
-                } else if (is_array($value)) {
+                } elseif (is_array($value)) {
                     $build[] = static::order($value);
                 } else {
                     continue;
@@ -474,7 +480,7 @@ class MySql
                     $key = preg_replace('/^(asc|desc)\s+/i', '', $key);
                 }
 
-                $build[] = static::raw('`' . $key . '` ' . $adjective);
+                $build[] = static::raw('`'.$key.'` '.$adjective);
             }
         }
 
@@ -485,7 +491,7 @@ class MySql
         return false;
     }
 
-    public static function join(array|string|self $data)
+    public static function join(array|self|string $data)
     {
         if (is_string($data) || $data instanceof self) {
             return $data;
@@ -497,11 +503,11 @@ class MySql
             if (!$where) {
                 continue;
             }
-            $build[] = static::raw("$key ON {$where}");
+            $build[] = static::raw("{$key} ON {$where}");
         }
 
         if (count($build) > 0) {
-            return ' ' . implode(' ', $build);
+            return ' '.implode(' ', $build);
         }
 
         return false;
@@ -531,11 +537,12 @@ class MySql
             $args[] = $options;
         }
 
-        return new PDO(...$args);
+        return new \PDO(...$args);
     }
 
     /**
-     * Set MySql Configuration
+     * Set MySql Configuration.
+     *
      * @param array{
      *      driver: string,
      *      host: string,
@@ -554,7 +561,7 @@ class MySql
         static::$my_config = $config;
     }
 
-    public static function pdo(?array $options = null): null|PDO
+    public static function pdo(?array $options = null): ?\PDO
     {
         if (!static::$pdo) {
             static::$pdo = static::connect($options);
@@ -568,7 +575,7 @@ class MySql
         return $this->error;
     }
 
-    public function exec($history = true): false|PDOStatement
+    public function exec($history = true): false|\PDOStatement
     {
         if ($this->executed) {
             return $this->stmt;
@@ -587,10 +594,12 @@ class MySql
         $success = $this->stmt->execute();
         if (!$success) {
             $this->error = $this->stmt->errorInfo();
+
             return false;
         }
 
         $this->executed = true;
+
         return $this->stmt;
     }
 
@@ -602,12 +611,13 @@ class MySql
 
         $keys = array_keys($data);
         $values = array_values($data);
-        $sql = "INSERT INTO $table (`" . implode('`, `', $keys) . "`) VALUES (" . implode(', ', array_fill(0, count($values), '?')) . ")";
-        for ($i = 0; $i < count($values); $i++) {
+        $sql = "INSERT INTO {$table} (`".implode('`, `', $keys).'`) VALUES ('.implode(', ', array_fill(0, count($values), '?')).')';
+        for ($i = 0; $i < count($values); ++$i) {
             if (is_array($values[$i])) {
                 $values[$i] = count($values[$i]) ? json_encode($values[$i]) : null;
             }
         }
+
         return static::raw($sql, $values);
     }
 
@@ -620,14 +630,15 @@ class MySql
         foreach ($data as $d) {
             $d = array_intersect_key($d, array_flip($cols));
             $rowdata = array_values($d);
-            for ($i = 0; $i < count($rowdata); $i++) {
+            for ($i = 0; $i < count($rowdata); ++$i) {
                 if (is_array($rowdata[$i])) {
                     $rowdata[$i] = count($rowdata[$i]) ? json_encode($rowdata[$i]) : null;
                 }
             }
             $values = array_merge($values, $rowdata);
         }
-        $sql = "INSERT INTO $table (`" . implode('`, `', $keys) . "`) VALUES " . implode(', ', array_fill(0, count($data), '(' . implode(', ', array_fill(0, count($keys), '?')) . ')'));
+        $sql = "INSERT INTO {$table} (`".implode('`, `', $keys).'`) VALUES '.implode(', ', array_fill(0, count($data), '('.implode(', ', array_fill(0, count($keys), '?')).')'));
+
         return static::raw($sql, $values);
     }
 
@@ -639,16 +650,18 @@ class MySql
 
         if (preg_match('/^([a-z0-9_]+)$/i', $table)) {
             return static::raw("`{$table}`");
-        } else if (preg_match('/^([a-z0-9_]+)\.([a-z0-9_]+)$/i', $table, $matches)) {
+        }
+        if (preg_match('/^([a-z0-9_]+)\.([a-z0-9_]+)$/i', $table, $matches)) {
             return static::raw("`{$matches[1]}`.`{$matches[2]}`");
-        } else if (preg_match("/^([a-z0-9_]+)(\s+)?\((.+)\)$/i", $table, $matches)) {
+        }
+        if (preg_match('/^([a-z0-9_]+)(\\s+)?\\((.+)\\)$/i', $table, $matches)) {
             return static::raw("{$matches[1]}({$matches[3]})");
         }
 
         return static::raw($table);
     }
 
-    public static function update(self|string $table, array $data, self|string|array $where = '1')
+    public static function update(self|string $table, array $data, array|self|string $where = '1')
     {
         $table = static::select_table($table);
         $cols = static::getTableColumns($table);
@@ -656,11 +669,11 @@ class MySql
         $keys = array_keys($data);
         $values = array_values($data);
         $where = static::where($where);
-        $set = implode(',', array_map(fn($key) => "`{$key}` = ?", $keys));
+        $set = implode(',', array_map(fn ($key) => "`{$key}` = ?", $keys));
 
-        $sql = "UPDATE $table SET $set" . ($where ? " WHERE $where" : '');
+        $sql = "UPDATE {$table} SET {$set}".($where ? " WHERE {$where}" : '');
 
-        for ($i = 0; $i < count($values); $i++) {
+        for ($i = 0; $i < count($values); ++$i) {
             if (is_array($values[$i])) {
                 $values[$i] = count($values[$i]) ? json_encode($values[$i]) : null;
             }
@@ -669,71 +682,82 @@ class MySql
         return static::raw($sql, $values);
     }
 
-    public static function delete(string $table, self|string|array $where = '1')
+    public static function delete(string $table, array|self|string $where = '1')
     {
         $table = static::select_table($table);
         $where = static::where($where);
-        $sql = "DELETE FROM $table" . ($where ? " WHERE $where" : '');
+        $sql = "DELETE FROM {$table}".($where ? " WHERE {$where}" : '');
+
         return static::raw($sql);
     }
 
     public function fetch(...$args)
     {
         $this->exec();
+
         return $this->stmt->fetch(...$args);
     }
 
     public function fetchAll(...$args)
     {
         $this->exec();
+
         return $this->stmt->fetchAll(...$args);
     }
 
     public function fetchColumn(...$args)
     {
         $this->exec();
+
         return $this->stmt->fetchColumn(...$args);
     }
 
     public function fetchObject(...$args)
     {
         $this->exec();
+
         return $this->stmt->fetchObject(...$args);
     }
 
     public function fetchAllObject(...$args)
     {
         $this->exec();
-        return $this->stmt->fetchAll(PDO::FETCH_CLASS, ...$args);
+
+        return $this->stmt->fetchAll(\PDO::FETCH_CLASS, ...$args);
     }
 
     public function affected()
     {
         $this->exec();
+
         return $this->stmt->rowCount();
     }
 
     public static function id(?string $name = null)
     {
         static::pdo();
+
         return static::$pdo->lastInsertId($name);
     }
 
     public static function beginTransaction()
     {
         static::pdo();
+
         return static::$pdo->beginTransaction();
     }
 
     public static function commit()
     {
         static::pdo();
+
         return MySql::pdo()->inTransaction() && static::$pdo->commit();
     }
 
     public static function rollback()
     {
         static::pdo();
+
         return MySql::pdo()->inTransaction() && static::$pdo->rollBack();
     }
 
@@ -742,21 +766,21 @@ class MySql
         static::$pdo = null;
     }
 
-    public static function extract_dbntable(string|self $table)
+    public static function extract_dbntable(self|string $table)
     {
         $dbname = Venv::get('DB_NAME', 'knights');
         if (preg_match('/^`([a-z0-9_]+)`$/i', $table, $matches)) {
             $table = $matches[1];
-        } else if (preg_match('/^`([a-z0-9_]+)`\.`([a-z0-9_]+)`$/i', $table, $matches)) {
+        } elseif (preg_match('/^`([a-z0-9_]+)`\.`([a-z0-9_]+)`$/i', $table, $matches)) {
             $dbname = $matches[1];
             $table = $matches[2];
-        } else if (preg_match('/^`([a-z0-9_]+)`\.`([a-z0-9_]+)`\s+as\s+`([a-z0-9_]+)`$/i', $table, $matches)) {
+        } elseif (preg_match('/^`([a-z0-9_]+)`\.`([a-z0-9_]+)`\s+as\s+`([a-z0-9_]+)`$/i', $table, $matches)) {
             $dbname = $matches[1];
             $table = $matches[2];
-        } else if (preg_match('/^([a-z0-9_]+)\.([a-z0-9_]+)$/i', $table, $matches)) {
+        } elseif (preg_match('/^([a-z0-9_]+)\.([a-z0-9_]+)$/i', $table, $matches)) {
             $dbname = $matches[1];
             $table = $matches[2];
-        } else if (preg_match('/^([a-z0-9_]+)\.([a-z0-9_]+)\s+as\s+([a-z0-9_]+)$/i', $table, $matches)) {
+        } elseif (preg_match('/^([a-z0-9_]+)\.([a-z0-9_]+)\s+as\s+([a-z0-9_]+)$/i', $table, $matches)) {
             $dbname = $matches[1];
             $table = $matches[2];
         }
@@ -764,14 +788,15 @@ class MySql
         return [$dbname, $table];
     }
 
-    public static function tableColumns(string|self $table)
+    public static function tableColumns(self|string $table)
     {
         [$dbname, $table] = static::extract_dbntable($table);
-        $sql = "SELECT `COLUMN_NAME` FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA=? AND TABLE_NAME=? ORDER BY ORDINAL_POSITION";
+        $sql = 'SELECT `COLUMN_NAME` FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA=? AND TABLE_NAME=? ORDER BY ORDINAL_POSITION';
+
         return static::raw($sql, [$dbname, $table]);
     }
 
-    public static function getTableColumns(string|self|null $table = null)
+    public static function getTableColumns(null|self|string $table = null)
     {
         if (is_null($table)) {
             return static::$columns;
@@ -781,9 +806,10 @@ class MySql
         if (isset(static::$columns[$table])) {
             return static::$columns[$table];
         }
-        $sql = "SELECT `COLUMN_NAME` FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA=? AND TABLE_NAME=? ORDER BY ORDINAL_POSITION";
+        $sql = 'SELECT `COLUMN_NAME` FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA=? AND TABLE_NAME=? ORDER BY ORDINAL_POSITION';
         $stmt = static::raw($sql, [$dbname, $table])->exec();
-        static::$columns[$table] = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        static::$columns[$table] = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+
         return static::$columns[$table];
     }
 }

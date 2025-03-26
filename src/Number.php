@@ -4,49 +4,44 @@ declare(strict_types=1);
 
 namespace Wyue;
 
-use Exception;
-use BadMethodCallException;
-use InvalidArgumentException;
-
 define('TYPES_NUMBER_PRECISION', 14);
 define('TYPES_NUMBER_NOPRECISION', -1);
 define('TYPES_NUMBER_DECIMAL', '/^([-+])?([0-9]+)((\.)([0-9]+))?$/');
 define('TYPES_NUMBER_SCIENTIFIC', '/^([-+])?([0-9]+)((\.)([0-9]+))?([eE]([-+])?([0-9]+))?$/');
 
 /**
- * Number
- * 
- * @method static bool isPrime(string $number) Check if a number is prime
- * @method static string round(string $number, int $precision = TYPES_NUMBER_PRECISION) Round a number
- * @method static string match_length(string $number, string $number2) Match length of two numbers
- * @method static string add(string $number, string $number2, int $precision = TYPES_NUMBER_PRECISION) Add two numbers
- * @method static string sub(string $number, string $number2, int $precision = TYPES_NUMBER_PRECISION) Subtract two numbers
- * @method static string mul(string $number, string $number2, int $precision = TYPES_NUMBER_PRECISION) Multiply two numbers
- * @method static string div(string $number, string $number2, int $precision = TYPES_NUMBER_PRECISION) Divide two numbers
- * @method static string mod(string $number, string $number2, int $precision = TYPES_NUMBER_PRECISION) Modulus of two numbers
- * @method static string pow(string $number, int $exp, int $precision = TYPES_NUMBER_PRECISION) Power of a number
+ * Number.
+ *
+ * @method static bool   isPrime(string $number)                                                              Check if a number is prime
+ * @method static string round(string $number, int $precision = TYPES_NUMBER_PRECISION)                       Round a number
+ * @method static string match_length(string $number, string $number2)                                        Match length of two numbers
+ * @method static string add(string $number, string $number2, int $precision = TYPES_NUMBER_PRECISION)        Add two numbers
+ * @method static string sub(string $number, string $number2, int $precision = TYPES_NUMBER_PRECISION)        Subtract two numbers
+ * @method static string mul(string $number, string $number2, int $precision = TYPES_NUMBER_PRECISION)        Multiply two numbers
+ * @method static string div(string $number, string $number2, int $precision = TYPES_NUMBER_PRECISION)        Divide two numbers
+ * @method static string mod(string $number, string $number2, int $precision = TYPES_NUMBER_PRECISION)        Modulus of two numbers
+ * @method static string pow(string $number, int $exp, int $precision = TYPES_NUMBER_PRECISION)               Power of a number
  * @method static string div_single(string $number, string $number2, int $precision = TYPES_NUMBER_PRECISION) Divide a number by a single digit number
- * @method static string comp(string $number, string $number2) Compare two numbers
- * @method static string parse(string $number, int $precision = TYPES_NUMBER_PRECISION) Parse a number to a proper format
- * 
- * @method bool isPrime() Check if the number is prime
- * @method string round(int $precision = TYPES_NUMBER_PRECISION) Round the number
- * @method string match_length(string $number2) Match length of number to another number
- * @method string add(string $number2, int $precision = TYPES_NUMBER_PRECISION) Add number to another number
- * @method string sub(string $number2, int $precision = TYPES_NUMBER_PRECISION) Subtract to a number
- * @method string mul(string $number2, int $precision = TYPES_NUMBER_PRECISION) Multiply to a number
- * @method string div(string $number2, int $precision = TYPES_NUMBER_PRECISION) Divide to a number
- * @method string mod(string $number2, int $precision = TYPES_NUMBER_PRECISION) Modulus of a number
- * @method string pow(int $exp, int $precision = TYPES_NUMBER_PRECISION) Get the power of a number
- * @method string div_single(string $number2, int $precision = TYPES_NUMBER_PRECISION) Divide the number by a single digit number
- * @method string comp(string $number2) Compare the number to another number
- * @method string parse(int $precision = TYPES_NUMBER_PRECISION) Parse the number to a proper format
+ * @method static string comp(string $number, string $number2)                                                Compare two numbers
+ * @method static string parse(string $number, int $precision = TYPES_NUMBER_PRECISION)                       Parse a number to a proper format
+ * @method        bool   isPrime()                                                                            Check if the number is prime
+ * @method        string round(int $precision = TYPES_NUMBER_PRECISION)                                       Round the number
+ * @method        string match_length(string $number2)                                                        Match length of number to another number
+ * @method        string add(string $number2, int $precision = TYPES_NUMBER_PRECISION)                        Add number to another number
+ * @method        string sub(string $number2, int $precision = TYPES_NUMBER_PRECISION)                        Subtract to a number
+ * @method        string mul(string $number2, int $precision = TYPES_NUMBER_PRECISION)                        Multiply to a number
+ * @method        string div(string $number2, int $precision = TYPES_NUMBER_PRECISION)                        Divide to a number
+ * @method        string mod(string $number2, int $precision = TYPES_NUMBER_PRECISION)                        Modulus of a number
+ * @method        string pow(int $exp, int $precision = TYPES_NUMBER_PRECISION)                               Get the power of a number
+ * @method        string div_single(string $number2, int $precision = TYPES_NUMBER_PRECISION)                 Divide the number by a single digit number
+ * @method        string comp(string $number2)                                                                Compare the number to another number
+ * @method        string parse(int $precision = TYPES_NUMBER_PRECISION)                                       Parse the number to a proper format
  */
 class Number
 {
+    public static $use_gmp = true;
+    public static $use_bc = true;
     protected $number;
-    static $use_gmp = true;
-    static $use_bc = true;
 
     public function __construct(string $number, int $precision = TYPES_NUMBER_PRECISION)
     {
@@ -65,20 +60,20 @@ class Number
 
     public function __call(string $name, array $arguments)
     {
-        if (method_exists(self::class, '_' . $name)) {
-            return call_user_func_array([self::class, '_' . $name], array_merge([$this->number], $arguments));
+        if (method_exists(self::class, '_'.$name)) {
+            return call_user_func_array([self::class, '_'.$name], array_merge([$this->number], $arguments));
         }
 
-        throw new BadMethodCallException('Call to undefined method ' . self::class . '::' . $name . '()');
+        throw new \BadMethodCallException('Call to undefined method '.self::class.'::'.$name.'()');
     }
 
     public static function __callStatic(string $name, array $arguments)
     {
-        if (method_exists(self::class, '_' . $name)) {
-            return call_user_func_array([self::class, '_' . $name], $arguments);
+        if (method_exists(self::class, '_'.$name)) {
+            return call_user_func_array([self::class, '_'.$name], $arguments);
         }
 
-        throw new BadMethodCallException('Call to undefined method ' . self::class . '::' . $name . '()');
+        throw new \BadMethodCallException('Call to undefined method '.self::class.'::'.$name.'()');
     }
 
     public static function _gmp(bool $use_gmp = true): void
@@ -95,23 +90,24 @@ class Number
     {
         $number = static::_parse($number, 0);
 
-        if ($number == 1 || empty($number)) {
+        if (1 == $number || empty($number)) {
             return false;
         }
 
         if (static::$use_gmp && function_exists('gmp_prob_prime')) {
-            return gmp_prob_prime($number) == 2;
+            return 2 == gmp_prob_prime($number);
         }
 
         $n = (int) $number;
         if ($n <= 3) {
             return $n > 1;
-        } elseif ($n % 2 == 0 || $n % 3 == 0) {
+        }
+        if (0 == $n % 2 || 0 == $n % 3) {
             return false;
         }
 
         for ($i = 5; $i * $i <= $n; $i += 6) {
-            if ($n % $i == 0 || $n % ($i + 2) == 0) {
+            if (0 == $n % $i || 0 == $n % ($i + 2)) {
                 return false;
             }
         }
@@ -125,18 +121,18 @@ class Number
             return static::_parse($number, $precision);
         }
 
-        if ($precision === TYPES_NUMBER_NOPRECISION) {
+        if (TYPES_NUMBER_NOPRECISION === $precision) {
             $precision = !empty($matches[5]) ? strlen($matches[5]) : 0;
         }
 
         $sign = $matches[1] ?? '';
-        $sign = $sign == '-' ? '-' : '';
+        $sign = '-' == $sign ? '-' : '';
         $int = ltrim($matches[2], '0') ?? '0';
         $dec = rtrim($matches[5] ?? '', '0') ?? '0';
         $dec = str_pad($dec, $precision, '0', STR_PAD_RIGHT);
         $dec = substr($dec, 0, $precision);
 
-        return $precision >= 1 ? $sign . $int . '.' . $dec : $sign . $int;
+        return $precision >= 1 ? $sign.$int.'.'.$dec : $sign.$int;
     }
 
     public static function _floor(string $number): string
@@ -152,7 +148,7 @@ class Number
         }
 
         if (!empty(trim($matches[5] ?? '', '0'))) {
-            return static::_add($matches[1] . $matches[2], '1', 0);
+            return static::_add($matches[1].$matches[2], '1', 0);
         }
 
         return static::_round($number, 0);
@@ -167,7 +163,7 @@ class Number
         $bs = $bmts[1] ?? '+';
         $ss = $as == $bs ? true : false;
         $sc = static::_comp($a, $b);
-        $ms = $sc == 1 ? $amts[1] : $bmts[1];
+        $ms = 1 == $sc ? $amts[1] : $bmts[1];
 
         $ai = $amts[2] ?? '0';
         $bi = $bmts[2] ?? '0';
@@ -183,8 +179,9 @@ class Number
         $af = str_pad($af, $mf, '0', STR_PAD_RIGHT);
         $bf = str_pad($bf, $mf, '0', STR_PAD_RIGHT);
 
-        $a = $ai . ($af ? '.' . $af : '');
-        $b = $bi . ($bf ? '.' . $bf : '');
+        $a = $ai.($af ? '.'.$af : '');
+        $b = $bi.($bf ? '.'.$bf : '');
+
         return [$a, $b, $ss, $ms];
     }
 
@@ -205,9 +202,10 @@ class Number
         if ($ss) {
             $carry = 0;
             $result = '';
-            for ($i = strlen($a) - 1; $i >= 0; $i--) {
-                if ($a[$i] == '.') {
-                    $result = '.' . $result;
+            for ($i = strlen($a) - 1; $i >= 0; --$i) {
+                if ('.' == $a[$i]) {
+                    $result = '.'.$result;
+
                     continue;
                 }
 
@@ -217,21 +215,22 @@ class Number
                     $carry = 1;
                     $sum -= 10;
                 }
-                $result = $sum . $result;
+                $result = $sum.$result;
             }
 
             if ($carry) {
-                $result = $carry . $result;
+                $result = $carry.$result;
             }
 
-            return $ms . $result;
+            return $ms.$result;
         }
 
         $carry = 0;
         $result = '';
-        for ($i = strlen($a) - 1; $i >= 0; $i--) {
-            if ($a[$i] == '.') {
-                $result = '.' . $result;
+        for ($i = strlen($a) - 1; $i >= 0; --$i) {
+            if ('.' == $a[$i]) {
+                $result = '.'.$result;
+
                 continue;
             }
 
@@ -241,14 +240,14 @@ class Number
                 $carry = 1;
                 $sum += 10;
             }
-            $result = $sum . $result;
+            $result = $sum.$result;
         }
 
         if ($carry) {
-            $result = $carry . $result;
+            $result = $carry.$result;
         }
 
-        return $ms . $result;
+        return $ms.$result;
     }
 
     public static function _sub(string $a, string $b, int $precision = TYPES_NUMBER_NOPRECISION): string
@@ -264,8 +263,9 @@ class Number
             return bcsub($a, $b, $precision);
         }
 
-        $s = strlen($b) > 0 && $b[0] == '-' ? '' : '-';
-        $b = strlen($b) > 0 && in_array($b[0], ['-', '+']) ? $s . substr($b, 1) : $s . $b;
+        $s = strlen($b) > 0 && '-' == $b[0] ? '' : '-';
+        $b = strlen($b) > 0 && in_array($b[0], ['-', '+']) ? $s.substr($b, 1) : $s.$b;
+
         return static::_add($a, $b, $precision);
     }
 
@@ -281,7 +281,7 @@ class Number
             return bcmul($a, $b, $precision);
         }
 
-        throw new Exception('Not implemented. Please use bc or gmp instead.');
+        throw new \Exception('Not implemented. Please use bc or gmp instead.');
     }
 
     public static function _div(string $a, string $b, int $precision = TYPES_NUMBER_PRECISION): string
@@ -289,7 +289,7 @@ class Number
         $a = static::_parse($a);
         $b = static::_parse($b);
 
-        if ($a == '0' || $b == '0') {
+        if ('0' == $a || '0' == $b) {
             return '0';
         }
 
@@ -301,12 +301,12 @@ class Number
             return bcdiv($a, $b, $precision);
         }
 
-        throw new Exception('Not implemented. Please use bc or gmp instead.');
+        throw new \Exception('Not implemented. Please use bc or gmp instead.');
     }
 
     public static function _div_single(string $a, string $b): string
     {
-        throw new Exception('Not implemented. Please use bc or gmp instead.');
+        throw new \Exception('Not implemented. Please use bc or gmp instead.');
     }
 
     public static function _mod(string $a, string $b, int $precision = TYPES_NUMBER_PRECISION): string
@@ -319,13 +319,13 @@ class Number
             return bcmod($a, $b, $precision);
         }
 
-        throw new Exception('Not implemented. Please use bc or gmp instead.');
+        throw new \Exception('Not implemented. Please use bc or gmp instead.');
     }
 
     public static function _comp(string $a, string $b): int
     {
         if (!preg_match(TYPES_NUMBER_DECIMAL, $a, $am) || !preg_match(TYPES_NUMBER_DECIMAL, $b, $bm)) {
-            throw new InvalidArgumentException("Invalid number format for '$a' or '$b'");
+            throw new \InvalidArgumentException("Invalid number format for '{$a}' or '{$b}'");
         }
 
         if (static::$use_gmp && function_exists('gmp_cmp')) {
@@ -336,8 +336,8 @@ class Number
             return bccomp($a, $b);
         }
 
-        $as = isset($am[1]) && !empty($am[1]) && $am[1] == '-' ? '-' : '+';
-        $bs = isset($bm[1]) && !empty($bm[1]) && $bm[1] == '-' ? '-' : '+';
+        $as = isset($am[1]) && !empty($am[1]) && '-' == $am[1] ? '-' : '+';
+        $bs = isset($bm[1]) && !empty($bm[1]) && '-' == $bm[1] ? '-' : '+';
         $ai = isset($am[2]) && !empty($am[2]) ? $am[2] : '0';
         $ai = ltrim($ai, '0');
         $bi = isset($bm[2]) && !empty($bm[2]) ? $bm[2] : '0';
@@ -347,81 +347,93 @@ class Number
         $bf = isset($bm[5]) && !empty($bm[5]) ? $bm[5] : '';
         $bf = rtrim($bf, '0');
 
-        $ac = $as . $ai . '.' . ($af ? $af : '0');
-        $bc = $bs . $bi . '.' . ($bf ? $bf : '0');
+        $ac = $as.$ai.'.'.($af ? $af : '0');
+        $bc = $bs.$bi.'.'.($bf ? $bf : '0');
 
         if ($ac == $bc) {
             return 0;
         }
         if ($as != $bs) {
-            return $as == '-' ? -1 : 1;
+            return '-' == $as ? -1 : 1;
         }
 
-        if ($as == '+') {
+        if ('+' == $as) {
             if (strlen($ai) > strlen($bi)) {
                 return 1;
-            } elseif (strlen($ai) < strlen($bi)) {
+            }
+            if (strlen($ai) < strlen($bi)) {
                 return -1;
-            } else if ($ai == $bi) {
+            }
+            if ($ai == $bi) {
                 if (strlen($af) > strlen($bf)) {
                     return 1;
-                } elseif (strlen($af) < strlen($bf)) {
+                }
+                if (strlen($af) < strlen($bf)) {
                     return -1;
-                } else if ($af == $bf) {
+                }
+                if ($af == $bf) {
                     return 0;
                 }
 
-                for ($i = 0; $i < strlen($af); $i++) {
+                for ($i = 0; $i < strlen($af); ++$i) {
                     if ($af[$i] > $bf[$i]) {
                         return 1;
-                    } elseif ($af[$i] < $bf[$i]) {
+                    }
+                    if ($af[$i] < $bf[$i]) {
                         return -1;
                     }
                 }
             } else {
-                for ($i = 0; $i < strlen($ai); $i++) {
+                for ($i = 0; $i < strlen($ai); ++$i) {
                     if ($ai[$i] > $bi[$i]) {
                         return 1;
-                    } elseif ($ai[$i] < $bi[$i]) {
+                    }
+                    if ($ai[$i] < $bi[$i]) {
                         return -1;
                     }
                 }
             }
         }
 
-        if ($as == '-') {
+        if ('-' == $as) {
             if (strlen($ai) > strlen($bi)) {
                 return -1;
-            } elseif (strlen($ai) < strlen($bi)) {
+            }
+            if (strlen($ai) < strlen($bi)) {
                 return 1;
-            } else if ($ai == $bi) {
+            }
+            if ($ai == $bi) {
                 if (strlen($af) > strlen($bf)) {
                     return -1;
-                } elseif (strlen($af) < strlen($bf)) {
+                }
+                if (strlen($af) < strlen($bf)) {
                     return 1;
-                } else if ($af == $bf) {
+                }
+                if ($af == $bf) {
                     return 0;
                 }
 
-                for ($i = 0; $i < strlen($af); $i++) {
+                for ($i = 0; $i < strlen($af); ++$i) {
                     if ($af[$i] > $bf[$i]) {
                         return -1;
-                    } elseif ($af[$i] < $bf[$i]) {
+                    }
+                    if ($af[$i] < $bf[$i]) {
                         return 1;
                     }
                 }
             } else {
-                for ($i = 0; $i < strlen($ai); $i++) {
+                for ($i = 0; $i < strlen($ai); ++$i) {
                     if ($ai[$i] > $bi[$i]) {
                         return -1;
-                    } elseif ($ai[$i] < $bi[$i]) {
+                    }
+                    if ($ai[$i] < $bi[$i]) {
                         return 1;
                     }
                 }
             }
         }
 
-        throw new Exception("Invalid comparison for '$a' and '$b'");
+        throw new \Exception("Invalid comparison for '{$a}' and '{$b}'");
     }
 
     public static function _pow(string $a, string $b): string
@@ -452,9 +464,10 @@ class Number
 
         if (preg_match(TYPES_NUMBER_SCIENTIFIC, $number, $matches)) {
             $precision = 0;
-            return static::_mul($matches[1] . $matches[2] . $matches[3], static::_pow('10', $matches[8]), $precision);
+
+            return static::_mul($matches[1].$matches[2].$matches[3], static::_pow('10', $matches[8]), $precision);
         }
 
-        throw new InvalidArgumentException("Invalid number format for '$number'");
+        throw new \InvalidArgumentException("Invalid number format for '{$number}'");
     }
 }

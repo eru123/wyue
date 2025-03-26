@@ -4,38 +4,40 @@ namespace Wyue;
 
 class Mime
 {
-    const MIME_CSS = 'text/css';
-    const MIME_JS = 'text/javascript';
-    const MIME_JSON = 'application/json';
-    const MIME_XML = 'application/xml';
-    const MIME_XSL = 'application/xml';
-    const MIME_XSLT = 'application/xml';
-    const MIME_XHTML = 'application/xhtml+xml';
-    const MIME_XHT = 'application/xhtml+xml';
-    const MIME_HTML = 'text/html';
-    const MIME_HTM = 'text/html';
-    const MIME_TXT = 'text/plain';
-    const MIME_CSV = 'text/csv';
-    const MIME_TSV = 'text/tab-separated-values';
-    const MIME_GIF = 'image/gif';
-    const MIME_JPG = 'image/jpeg';
-    const MIME_JPEG = 'image/jpeg';
-    const MIME_JPE = 'image/jpeg';
-    const MIME_PNG = 'image/png';
-    const MIME_BMP = 'image/bmp';
-    const MIME_ICO = 'image/x-icon';
-    const MIME_TIF = 'image/tiff';
-    const MIME_TIFF = 'image/tiff';
-    const MIME_SVG = 'image/svg+xml';
-    const MIME_WOFF = 'application/font-woff';
-    const MIME_WOFF2 = 'application/font-woff2';
-    const MIME_TTF = 'application/font-sfnt';
-    const MIME_OTF = 'application/font-sfnt';
-    const MIME_EOT = 'application/vnd.ms-fontobject';
+    public const MIME_CSS = 'text/css';
+    public const MIME_JS = 'text/javascript';
+    public const MIME_JSON = 'application/json';
+    public const MIME_XML = 'application/xml';
+    public const MIME_XSL = 'application/xml';
+    public const MIME_XSLT = 'application/xml';
+    public const MIME_XHTML = 'application/xhtml+xml';
+    public const MIME_XHT = 'application/xhtml+xml';
+    public const MIME_HTML = 'text/html';
+    public const MIME_HTM = 'text/html';
+    public const MIME_TXT = 'text/plain';
+    public const MIME_CSV = 'text/csv';
+    public const MIME_TSV = 'text/tab-separated-values';
+    public const MIME_GIF = 'image/gif';
+    public const MIME_JPG = 'image/jpeg';
+    public const MIME_JPEG = 'image/jpeg';
+    public const MIME_JPE = 'image/jpeg';
+    public const MIME_PNG = 'image/png';
+    public const MIME_BMP = 'image/bmp';
+    public const MIME_ICO = 'image/x-icon';
+    public const MIME_TIF = 'image/tiff';
+    public const MIME_TIFF = 'image/tiff';
+    public const MIME_SVG = 'image/svg+xml';
+    public const MIME_WOFF = 'application/font-woff';
+    public const MIME_WOFF2 = 'application/font-woff2';
+    public const MIME_TTF = 'application/font-sfnt';
+    public const MIME_OTF = 'application/font-sfnt';
+    public const MIME_EOT = 'application/vnd.ms-fontobject';
 
     /**
-     * Convert ext to Mime type
+     * Convert ext to Mime type.
+     *
      * @param string $ext File extension
+     *
      * @return string Mime type
      */
     public static function ext2mime(string $ext, string $default = 'application/octet-stream'): string
@@ -75,7 +77,9 @@ class Mime
 
     /**
      * Convert a MIME type to an extension.
+     *
      * @param string $mime MIME type
+     *
      * @return string Extension
      */
     public static function mime2ext(string $mime): string

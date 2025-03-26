@@ -2,37 +2,30 @@
 
 namespace Wyue\Commands;
 
-use Exception;
-use Throwable;
 use Wyue\Exceptions\InvalidCommandException;
 
 class CLI
 {
     use IO;
 
-    const COLOR_BLACK = "\e[30m";
-    const COLOR_RED = "\e[31m";
-    const COLOR_GREEN = "\e[32m";
-    const COLOR_YELLOW = "\e[33m";
-    const COLOR_BLUE = "\e[34m";
-    const COLOR_MAGENTA = "\e[35m";
-    const COLOR_CYAN = "\e[36m";
-    const COLOR_WHITE = "\e[37m";
-    const COLOR_BRIGHT_BLACK = "\e[90m";
-    const COLOR_BRIGHT_RED = "\e[91m";
-    const COLOR_BRIGHT_GREEN = "\e[92m";
-    const COLOR_BRIGHT_YELLOW = "\e[93m";
-    const COLOR_BRIGHT_BLUE = "\e[94m";
-    const COLOR_BRIGHT_MAGENTA = "\e[95m";
-    const COLOR_BRIGHT_CYAN = "\e[96m";
-    const COLOR_BRIGHT_WHITE = "\e[97m";
-    const COLOR_DEFAULT = "\e[39m";
-    const COLOR_RESET = "\e[0m";
-
-    /**
-     * @var array The command instances
-     */
-    private static $intances = [];
+    public const COLOR_BLACK = "\e[30m";
+    public const COLOR_RED = "\e[31m";
+    public const COLOR_GREEN = "\e[32m";
+    public const COLOR_YELLOW = "\e[33m";
+    public const COLOR_BLUE = "\e[34m";
+    public const COLOR_MAGENTA = "\e[35m";
+    public const COLOR_CYAN = "\e[36m";
+    public const COLOR_WHITE = "\e[37m";
+    public const COLOR_BRIGHT_BLACK = "\e[90m";
+    public const COLOR_BRIGHT_RED = "\e[91m";
+    public const COLOR_BRIGHT_GREEN = "\e[92m";
+    public const COLOR_BRIGHT_YELLOW = "\e[93m";
+    public const COLOR_BRIGHT_BLUE = "\e[94m";
+    public const COLOR_BRIGHT_MAGENTA = "\e[95m";
+    public const COLOR_BRIGHT_CYAN = "\e[96m";
+    public const COLOR_BRIGHT_WHITE = "\e[97m";
+    public const COLOR_DEFAULT = "\e[39m";
+    public const COLOR_RESET = "\e[0m";
 
     /**
      * @var int The start of the index on the argv, and the index of the entry
@@ -40,12 +33,18 @@ class CLI
     public static $idx = 1;
 
     /**
-     * Get the argv array
+     * @var array The command instances
+     */
+    private static $intances = [];
+
+    /**
+     * Get the argv array.
+     *
      * @return array
      */
     public static function args()
     {
-        $args =  isset($argv) ? $argv : ($_SERVER['argv'] ?? []);
+        $args = isset($argv) ? $argv : ($_SERVER['argv'] ?? []);
         if (count($args) < static::$idx) {
             return [];
         }
@@ -54,41 +53,33 @@ class CLI
     }
 
     /**
-     * Get the entry name
-     * @return string
-     */
-    private static function getEntryName()
-    {
-        return strtolower(trim(strval(@static::args()[0] ?? '')));
-    }
-
-    /**
-     * Get the command instance
-     * @return AbstractCommand
-     * @throws Exception
+     * Get the command instance.
+     *
+     * @throws \Exception
      */
     public static function getEntryInstance(): AbstractCommand
     {
         $name = static::getEntryName();
         if (empty($name)) {
-            throw new InvalidCommandException("No Command");
-        } elseif (!isset(static::$intances[$name])) {
-            throw new InvalidCommandException("Command '" . implode(' ', static::args()) . "' is not a registered command.");
+            throw new InvalidCommandException('No Command');
+        }
+        if (!isset(static::$intances[$name])) {
+            throw new InvalidCommandException("Command '".implode(' ', static::args())."' is not a registered command.");
         }
 
         return static::$intances[$name];
     }
 
     /**
-     * Get the entry 
+     * Get the entry.
      */
 
     /**
-     * Register a CLI command
-     * @param string|array $className The class name/s' and is a child of AbstractCommand
-     * @return void
+     * Register a CLI command.
+     *
+     * @param array|string $className The class name/s' and is a child of AbstractCommand
      */
-    public static function register(string|array $className)
+    public static function register(array|string $className)
     {
         try {
             if (is_string($className)) {
@@ -102,25 +93,25 @@ class CLI
 
                 $instance = new $class();
                 if (class_exists($class) && $instance instanceof AbstractCommand) {
-
                     if (!isset(static::$intances[$instance->getEntry()])) {
                         $name = strtolower(trim($instance->getEntry()));
                         static::$intances[$name] = $instance;
+
                         continue;
                     }
 
-                    throw new Exception('Command entry \'' . $instance->getEntry() . '\' already exists');
+                    throw new \Exception('Command entry \''.$instance->getEntry().'\' already exists');
                 }
             }
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             static::error($e->getMessage());
+
             exit(1);
         }
     }
 
     /**
-     * Display the Help manual
-     * @return void
+     * Display the Help manual.
      */
     public static function help()
     {
@@ -130,8 +121,7 @@ class CLI
     }
 
     /**
-     * Start the CLI handler
-     * @return void
+     * Start the CLI handler.
      */
     public static function listen()
     {
@@ -139,14 +129,16 @@ class CLI
         $cmd = null;
 
         try {
-            if (php_sapi_name() !== 'cli') {
-                throw new Exception(get_class() . '::listen() can only be used in CLI mode');
+            if ('cli' !== php_sapi_name()) {
+                throw new \Exception(get_class().'::listen() can only be used in CLI mode');
+
                 exit(1);
             }
 
             $cmd = static::getEntryInstance();
             $verbose = $cmd->flag('V|verbose');
             $cmd->handle();
+
             exit(0);
         } catch (InvalidCommandException $e) {
             static::error($verbose ? strval($e) : $e->getMessage());
@@ -156,11 +148,23 @@ class CLI
             } else {
                 static::help();
             }
+
             exit(1);
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             static::error($verbose ? strval($e) : $e->getMessage());
             CLI::println();
+
             exit(1);
         }
+    }
+
+    /**
+     * Get the entry name.
+     *
+     * @return string
+     */
+    private static function getEntryName()
+    {
+        return strtolower(trim(strval(@static::args()[0] ?? '')));
     }
 }

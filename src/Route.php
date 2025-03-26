@@ -2,13 +2,11 @@
 
 namespace Wyue;
 
-use Throwable;
-use Wyue\Venv;
-use Wyue\Exceptions\ApiException;
 use Wyue\Controllers\FileStream;
+use Wyue\Exceptions\ApiException;
 
 /**
- * Wyue Route class
+ * Wyue Route class.
  */
 class Route
 {
@@ -16,15 +14,16 @@ class Route
 
     private array $middlewares = [];
     private array $urlParameters = [];
-    private string $parentRoute = "/";
-    private $errorHandler = null;
-    private $responseHandler = null;
+    private string $parentRoute = '/';
+    private $errorHandler;
+    private $responseHandler;
     private int $httpCode = 200;
     private bool $debug = false;
 
     /**
-     * Create a new route context
-     * @param Route|null $route A parent route context
+     * Create a new route context.
+     *
+     * @param null|Route $route A parent route context
      */
     public function __construct(?Route $route = null)
     {
@@ -40,7 +39,8 @@ class Route
     }
 
     /**
-     * Get the middlewares for the current route context
+     * Get the middlewares for the current route context.
+     *
      * @return array Array of middlewares
      */
     public function getMiddlewares(): array
@@ -49,19 +49,25 @@ class Route
     }
 
     /**
-     * Sets the middlewares for the current route context
+     * Sets the middlewares for the current route context.
+     *
      * @param mixed ...$cb
+     *
      * @return Route
      */
     public function Middlewares(...$cb)
     {
         $this->middlewares = $cb;
+
         return $this;
     }
 
     /**
-     * Get the request parameters
-     * @param array|null $key Magic array key
+     * Get the request parameters.
+     *
+     * @param null|array $key     Magic array key
+     * @param null|mixed $default
+     *
      * @return array|mixed returns an array if $key is null, else the value of the key
      */
     public function Params(?string $key = null, $default = null)
@@ -70,20 +76,24 @@ class Route
     }
 
     /**
-     * Get the request payload
-     * @param array|null $key Magic array key
+     * Get the request payload.
+     *
+     * @param null|array $key Magic array key
+     *
      * @return array|mixed returns an array if $key is null, else the value of the key
      */
     public function Payload(?array $key = null)
     {
         $json = json_decode(file_get_contents('php://input'), true) ?? [];
         $payload = $json + $_REQUEST;
+
         return $payload;
     }
 
     public function setParams(array $params)
     {
         $this->urlParameters = $params;
+
         return $this;
     }
 
@@ -95,12 +105,14 @@ class Route
     public function setErrorHandler($errorHandler): Route
     {
         $this->errorHandler = $errorHandler;
+
         return $this;
     }
 
     public function setParentRoute(string $parentRoute)
     {
         $this->parentRoute = $parentRoute;
+
         return $this;
     }
 
@@ -117,6 +129,7 @@ class Route
     public function setResponseHandler($responseHandler): Route
     {
         $this->responseHandler = $responseHandler;
+
         return $this;
     }
 
@@ -126,8 +139,7 @@ class Route
     }
 
     /**
-     * Get the debug mode
-     * @return bool
+     * Get the debug mode.
      */
     public function getDebug(): bool
     {
@@ -135,49 +147,47 @@ class Route
     }
 
     /**
-     * Set the debug mode
-     * @param bool $debug
-     * @return Route
+     * Set the debug mode.
      */
     public function Debug(bool $debug): Route
     {
         $this->debug = $debug;
+
         return $this;
     }
 
     /**
-     * Get the current request URI
-     * @return string
+     * Get the current request URI.
      */
     public function uri(): string
     {
         $uri = preg_replace('/\?.*$/', '', (string) $_SERVER['REQUEST_URI']);
-        $uri = '/' . trim($uri, '/');
+        $uri = '/'.trim($uri, '/');
+
         return $uri;
     }
 
     /**
-     * Creates a new route handler
-     * @param string $path
+     * Creates a new route handler.
      */
     public function Route(string $path, ...$cb): Route
     {
-        $rgxSuffix = "\/?(?P<resource>.*)?$/";
+        $rgxSuffix = '\\/?(?P<resource>.*)?$/';
         $cpath = Helper::CombineUrlPaths($this->parentRoute, $path);
-        if (substr($cpath, -1) == "$") {
+        if ('$' == substr($cpath, -1)) {
             $cpath = substr($cpath, 0, -1);
-            $rgxSuffix = "\/?$/";
+            $rgxSuffix = '\\/?$/';
         }
 
         $uri = preg_replace('/\//', '\\\/', $cpath);
         $rgx = '/\{([a-zA-Z_]([a-zA-Z0-9_]+)?)\}|\$([a-zA-Z_]([a-zA-Z0-9_]+)?)|\:([a-zA-Z_]([a-zA-Z0-9_]+)?)/';
-        $rgx = preg_replace_callback($rgx, fn($m) => "(?P<" . ($m[1] ?: $m[3] ?: $m[5]) . ">[^\/\?]+)", $uri);
-        $rgx = '/^' . $rgx . $rgxSuffix;
+        $rgx = preg_replace_callback($rgx, fn ($m) => '(?P<'.($m[1] ?: $m[3] ?: $m[5]).'>[^\\/\\?]+)', $uri);
+        $rgx = '/^'.$rgx.$rgxSuffix;
 
-        $match = !!preg_match($rgx, $this->uri(), $params);
+        $match = (bool) preg_match($rgx, $this->uri(), $params);
 
         if ($match) {
-            $params = array_filter($params, fn($key) => !is_int($key), ARRAY_FILTER_USE_KEY);
+            $params = array_filter($params, fn ($key) => !is_int($key), ARRAY_FILTER_USE_KEY);
 
             $routeContext = new Route($this);
             $routeContext->setParams($params + $this->Params());
@@ -190,7 +200,7 @@ class Route
             try {
                 foreach ($cbs as $cba) {
                     $res = Helper::Callback($cba, [$routeContext, $res]);
-                    if ($res === false) {
+                    if (false === $res) {
                         break;
                     }
                 }
@@ -201,7 +211,7 @@ class Route
                 } else {
                     $res = $routeContext->defaultErrorHandler($routeContext, $e);
                 }
-            } catch (Throwable $e) {
+            } catch (\Throwable $e) {
                 if ($routeContext->errorHandler) {
                     $res = $routeContext->ErrorHandler()($routeContext, $e);
                 } else {
@@ -222,8 +232,10 @@ class Route
     }
 
     /**
-     * Set the http response code
+     * Set the http response code.
+     *
      * @param int $httpCode HTTP Response Code
+     *
      * @return Route
      */
     public function code(int $httpCode = 200)
@@ -233,22 +245,25 @@ class Route
             $http_code = 500;
         }
         $this->httpCode = $http_code;
+
         return $this;
     }
 
     /**
-     * Default error handler
-     * @param Route $routeContext Although it's not used, it's required to match the format of the other handlers
-     * @param Throwable $e
+     * Default error handler.
+     *
+     * @param Route      $routeContext Although it's not used, it's required to match the format of the other handlers
+     * @param \Throwable $e
+     *
      * @return array An array with the following keys: code, error, message
      */
     public function defaultErrorHandler($routeContext, $e)
     {
         $this->code(is_string($e->getCode()) ? 500 : $e->getCode());
         $res = [
-            "code" => $this->httpCode,
-            "error" => "Internal Server Error",
-            "message" => $e->getMessage(),
+            'code' => $this->httpCode,
+            'error' => 'Internal Server Error',
+            'message' => $e->getMessage(),
         ];
 
         if ($this->debug || $routeContext->getDebug()) {
@@ -260,10 +275,12 @@ class Route
     }
 
     /**
-     * Default response handler
+     * Default response handler.
+     *
      * @param Route $routeContext Although it's not used, it's required to match the format of the other handlers
      * @param array $res
-     * @return array 
+     *
+     * @return array
      */
     public function defaultResponseHandler($routeContext, $res)
     {
@@ -287,13 +304,13 @@ class Route
 
                 if (is_array($res)) {
                     $res['debug'] = $debug;
-                } else if (is_object($res)) {
+                } elseif (is_object($res)) {
                     $res->debug = $debug;
                 }
             }
 
             echo json_encode($res);
-        } else if (is_string($res)) {
+        } elseif (is_string($res)) {
             echo $res;
         }
 
@@ -301,78 +318,90 @@ class Route
     }
 
     /**
-     * Create a GET Request Route
-     * @param string $path
+     * Create a GET Request Route.
+     *
      * @param mixed ...$cb
+     *
      * @return Route
      */
     public function Get(string $path, ...$cb)
     {
-        if (strtoupper($_SERVER['REQUEST_METHOD']) !== 'GET') {
+        if ('GET' !== strtoupper($_SERVER['REQUEST_METHOD'])) {
             return $this;
         }
+
         return $this->Route($path, $cb, 'GET');
     }
 
     /**
-     * Create a POST Request Route
-     * @param string $path
+     * Create a POST Request Route.
+     *
      * @param mixed ...$cb
+     *
      * @return Route
      */
     public function Post(string $path, ...$cb)
     {
-        if (strtoupper($_SERVER['REQUEST_METHOD']) !== 'POST') {
+        if ('POST' !== strtoupper($_SERVER['REQUEST_METHOD'])) {
             return $this;
         }
+
         return $this->Route($path, $cb, 'POST');
     }
 
     /**
-     * Create a PUT Request Route
-     * @param string $path
+     * Create a PUT Request Route.
+     *
      * @param mixed ...$cb
+     *
      * @return Route
      */
     public function Put(string $path, ...$cb)
     {
-        if (strtoupper($_SERVER['REQUEST_METHOD']) !== 'PUT') {
+        if ('PUT' !== strtoupper($_SERVER['REQUEST_METHOD'])) {
             return $this;
         }
+
         return $this->Route($path, $cb, 'PUT');
     }
 
     /**
-     * Create a PATCH Request Route
-     * @param string $path
+     * Create a PATCH Request Route.
+     *
      * @param mixed ...$cb
+     *
      * @return Route
      */
     public function Patch(string $path, ...$cb)
     {
-        if (strtoupper($_SERVER['REQUEST_METHOD']) !== 'PATCH') {
+        if ('PATCH' !== strtoupper($_SERVER['REQUEST_METHOD'])) {
             return $this;
         }
+
         return $this->Route($path, $cb, 'PATCH');
     }
 
     /**
-     * Create a DELETE Request Route
-     * @param string $path
+     * Create a DELETE Request Route.
+     *
      * @param mixed ...$cb
+     *
      * @return Route
      */
     public function Delete(string $path, ...$cb)
     {
-        if (strtoupper($_SERVER['REQUEST_METHOD']) !== 'DELETE') {
+        if ('DELETE' !== strtoupper($_SERVER['REQUEST_METHOD'])) {
             return $this;
         }
+
         return $this->Route($path, $cb, 'DELETE');
     }
 
     /**
-     * Create a Fallback Route
+     * Create a Fallback Route.
+     *
      * @param mixed ...$cb
+     *
      * @return Route
      */
     public function Fallback(...$cb)
@@ -381,29 +410,31 @@ class Route
     }
 
     /**
-     * Expose Static Files
-     * @param string $path
-     * @param string $dir
+     * Expose Static Files.
+     *
      * @return Route
      */
     public function Static(string $path, string $dir, ...$cb)
     {
         $get_resource = function (self $ctx) use ($dir) {
-            $rsrc = strval($ctx->Params("resource"));
-            $fpath = realpath(rtrim($dir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($rsrc, DIRECTORY_SEPARATOR));
+            $rsrc = strval($ctx->Params('resource'));
+            $fpath = realpath(rtrim($dir, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.ltrim($rsrc, DIRECTORY_SEPARATOR));
             if (empty($rsrc) || !$fpath || !is_file($fpath)) {
                 return false;
             }
+
             return $fpath;
         };
 
         $cb[] = function (self $ctx, $fpath) {
             if (realpath($fpath) && is_file($fpath)) {
                 $ctx->streamFile($fpath);
+
                 exit(0);
             }
 
             http_response_code(404);
+
             exit(1);
         };
 

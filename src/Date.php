@@ -3,7 +3,6 @@
 namespace Wyue;
 
 use DateTime;
-use Exception;
 
 define('DATE_TYPE_UNIT', 0);
 define('DATE_TYPE_FORMAT', 1);
@@ -20,12 +19,13 @@ define('DATE_UNIT_LEAP_YEAR', 'ly');
 class Date
 {
     /**
-     * @var int $global_time static time value for time sensitive functions and simulations
+     * @var int static time value for time sensitive functions and simulations
      */
     private static $global_time;
 
     /**
-     * Set global time
+     * Set global time.
+     *
      * @param int $time
      */
     public static function setTime($time = null)
@@ -34,7 +34,8 @@ class Date
     }
 
     /**
-     * Get global time
+     * Get global time.
+     *
      * @return int
      */
     public static function now()
@@ -42,13 +43,16 @@ class Date
         if (is_null(static::$global_time)) {
             static::setTime();
         }
+
         return static::$global_time;
     }
 
     /**
-     * translate unit name to unit keyword
+     * translate unit name to unit keyword.
+     *
      * @param string $unit Unit name
-     * @return string|bool Returns unit keyword or false if unit name is invalid
+     *
+     * @return bool|string Returns unit keyword or false if unit name is invalid
      */
     public static function unit($unit)
     {
@@ -65,23 +69,26 @@ class Date
         ];
 
         $unit = is_string($unit) && !empty(trim($unit)) ? trim($unit) : false;
-        if ($unit)
+        if ($unit) {
             foreach ($rgx_unit as $key => $rgx) {
                 if (preg_match($rgx, $unit)) {
                     return $key;
                 }
             }
+        }
 
         return false;
     }
 
     /**
-     * Translate time to given unit
+     * Translate time to given unit.
+     *
      * @param string $query Time to translate
-     * @param string $out Unit to translate to
+     * @param string $out   Unit to translate to
+     *
      * @return float|int time in $out
      */
-    public static function translate($query, $out = "ms")
+    public static function translate($query, $out = 'ms')
     {
         $out = static::unit($out);
 
@@ -120,16 +127,18 @@ class Date
     }
 
     /**
-     * Convert ms to other time unit
-     * @param int $ms Milliseconds to convert
-     * @param string $out Output unit to translate to
-     * @param int $type Output type (`UNIT`|`FORMAT`)
+     * Convert ms to other time unit.
+     *
+     * @param int    $ms   Milliseconds to convert
+     * @param string $out  Output unit to translate to
+     * @param int    $type Output type (`UNIT`|`FORMAT`)
+     *
      * @return float|int|string time in $out
      */
-    public static function ms_to($ms, $out = "ms", $type = DATE_TYPE_UNIT)
+    public static function ms_to($ms, $out = 'ms', $type = DATE_TYPE_UNIT)
     {
         $f_out = static::unit($out);
-        $out = $type === DATE_TYPE_UNIT ? ($f_out ? $f_out : $out) : $out;
+        $out = DATE_TYPE_UNIT === $type ? ($f_out ? $f_out : $out) : $out;
 
         $ms = floatval($ms);
         $opts = [
@@ -144,38 +153,45 @@ class Date
             'ly' => 31622400000,
         ];
 
-        $dt = new DateTime();
+        $dt = new \DateTime();
 
-        if (isset($opts[$out]) && $type === DATE_TYPE_UNIT) {
+        if (isset($opts[$out]) && DATE_TYPE_UNIT === $type) {
             return $ms / $opts[$out];
-        } else if ($out == "datetime") {
+        }
+        if ('datetime' == $out) {
             return $dt->setTimestamp($ms / 1000)->format('Y-m-d H:i:s');
-        } else if ($out == "date") {
+        }
+        if ('date' == $out) {
             return $dt->setTimestamp($ms / 1000)->format('Y-m-d');
-        } else if ($out == "time") {
+        }
+        if ('time' == $out) {
             return $dt->setTimestamp($ms / 1000)->format('H:i:s');
-        } else if ($type === DATE_TYPE_UNIT) {
-            throw new Exception("Invalid output unit");
+        }
+        if (DATE_TYPE_UNIT === $type) {
+            throw new \Exception('Invalid output unit');
         }
 
-        if ($type !== DATE_TYPE_FORMAT) {
-            throw new Exception("Invalid output type");
+        if (DATE_TYPE_FORMAT !== $type) {
+            throw new \Exception('Invalid output type');
         }
 
         return $dt->setTimestamp($ms / 1000)->format($out);
     }
 
     /**
-     * Date Time Magic Parser
+     * Date Time Magic Parser.
+     *
      * @param string $query Date time to parse
-     * @param string $out Unit or format to translate to
+     * @param string $out   Unit or format to translate to
+     * @param mixed  $type
+     *
      * @return float|int|string time in $out
      */
-    public static function parse(string $query, $out = "s", $type = DATE_TYPE_UNIT)
+    public static function parse(string $query, $out = 's', $type = DATE_TYPE_UNIT)
     {
         $now = static::now();
 
-        $dt = new DateTime();
+        $dt = new \DateTime();
         $dt->setTimestamp($now);
 
         $rgx_parser = [
@@ -194,38 +210,40 @@ class Date
             'datetime_ns' => [
                 'rgx' => '/(\d{4})-(\d{2})-(\d{2})\s(\d{2}):(\d{2})/',
                 'cb' => function ($matches) {
-                    return strtotime($matches[0] . ':00');
+                    return strtotime($matches[0].':00');
                 },
             ],
             'datetime_nm' => [
                 'rgx' => '/(\d{4})-(\d{2})-(\d{2})\s(\d{2})/',
                 'cb' => function ($matches) {
-                    return strtotime($matches[0] . ':00:00');
+                    return strtotime($matches[0].':00:00');
                 },
             ],
             'date' => [
                 'rgx' => '/(\d{4})-(\d{2})-(\d{2})/',
                 'cb' => function ($matches) {
-                    return strtotime($matches[0] . ' 00:00:00');
+                    return strtotime($matches[0].' 00:00:00');
                 },
             ],
             'month' => [
                 'rgx' => '/(\d{4})-(\d{2})/',
                 'cb' => function ($matches) {
-                    return strtotime($matches[0] . '-01 00:00:00');
+                    return strtotime($matches[0].'-01 00:00:00');
                 },
             ],
             'time' => [
                 'rgx' => '/(\d{2}):(\d{2}):(\d{2})/',
                 'cb' => function ($matches) use ($dt) {
-                    $nd = $dt->format('Y-m-d') . ' ' . $matches[0];
+                    $nd = $dt->format('Y-m-d').' '.$matches[0];
+
                     return strtotime($nd);
                 },
             ],
             'time_ns' => [
                 'rgx' => '/(\d{2}):(\d{2})/',
                 'cb' => function ($matches) use ($dt) {
-                    $nd = $dt->format('Y-m-d') . ' ' . $matches[0] . ':00';
+                    $nd = $dt->format('Y-m-d').' '.$matches[0].':00';
+
                     return strtotime($nd);
                 },
             ],
@@ -279,31 +297,34 @@ class Date
 
         // check if safe to eval
         if (!preg_match('/^[\d\s\+\-\*\/\%\(\)]+$/', $query)) {
-            throw new Exception('Invalid query');
+            throw new \Exception('Invalid query');
         }
 
-        $ts = eval('return ' . $query . ';') * 1000;
+        $ts = eval('return '.$query.';') * 1000;
 
         return static::ms_to($ts, $out, $type);
     }
 
     /**
-     * Get a timestamp in milliseconds
+     * Get a timestamp in milliseconds.
+     *
      * @param null|int|string $timestamp or DateTime format string
+     *
      * @return int timestamp
+     *
      * @see https://www.php.net/manual/en/datetime.formats.php
      */
     public static function getTimestamp(null|int|string $timestamp = null)
     {
-        $dt = new DateTime();
+        $dt = new \DateTime();
         if (is_null($timestamp)) {
             if (static::$global_time) {
                 $dt->setTimestamp(static::$global_time);
             }
-        } else if (!is_int($timestamp)) {
+        } elseif (!is_int($timestamp)) {
             $dt->setTimestamp($timestamp);
         } else {
-            $dt = new DateTime($timestamp);
+            $dt = new \DateTime($timestamp);
         }
 
         return intval($dt->format('Uv'));

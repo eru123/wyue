@@ -2,20 +2,17 @@
 
 namespace Wyue;
 
-use Exception;
-use DateTime;
-
 class JWT
 {
     public $leeway = 0;
-    public $timestamp = null;
+    public $timestamp;
     public $algs = [
         'HS256' => 'SHA256',
         'HS384' => 'SHA384',
-        'HS512' => 'SHA512'
+        'HS512' => 'SHA512',
     ];
-    public $key = null;
-    public $alg = null;
+    public $key;
+    public $alg;
 
     public function __construct(?string $key = null, string $alg = 'HS256', int $leeway = 0)
     {
@@ -30,11 +27,11 @@ class JWT
         $alg = $alg ?? $this->alg;
 
         if (empty($key)) {
-            throw new Exception('Invalid secret key', 400);
+            throw new \Exception('Invalid secret key', 400);
         }
 
         if (empty($this->algs[$this->alg])) {
-            throw new Exception('Algorithm not supported', 400);
+            throw new \Exception('Algorithm not supported', 400);
         }
 
         $tmc_keys = ['iat', 'nbf', 'exp', 'jti'];
@@ -44,7 +41,7 @@ class JWT
             }
 
             if (isset($payload[$tk]) && !is_numeric($payload[$tk])) {
-                throw new Exception("Invalid value for $tk", 400);
+                throw new \Exception("Invalid value for {$tk}", 400);
             }
         }
 
@@ -78,70 +75,70 @@ class JWT
         $alg = $alg ?? $this->alg;
 
         if (empty($key)) {
-            throw new Exception('Invalid secret key', 400);
+            throw new \Exception('Invalid secret key', 400);
         }
 
         if (empty($alg)) {
-            throw new Exception('Algorithm not supported', 400);
+            throw new \Exception('Algorithm not supported', 400);
         }
 
         $timestamp = is_null($this->timestamp) ? Date::now() : $this->timestamp;
 
         $tks = explode('.', $jwt);
-        if (count($tks) !== 3) {
-            throw new Exception('Wrong number of segments', 401);
+        if (3 !== count($tks)) {
+            throw new \Exception('Wrong number of segments', 401);
         }
 
         list($headb64, $bodyb64, $cryptob64) = $tks;
 
         $headerRaw = static::urlsafeB64Decode($headb64);
         if (null === ($header = static::jsonDecode($headerRaw))) {
-            throw new Exception('Invalid header encoding', 401);
+            throw new \Exception('Invalid header encoding', 401);
         }
 
         $payloadRaw = static::urlsafeB64Decode($bodyb64);
         if (null === ($payload = static::jsonDecode($payloadRaw))) {
-            throw new Exception('Invalid claims encoding', 401);
+            throw new \Exception('Invalid claims encoding', 401);
         }
 
         $sig = static::urlsafeB64Decode($cryptob64);
 
         if (!is_array($header)) {
-            throw new Exception('Invalid header encoding', 401);
+            throw new \Exception('Invalid header encoding', 401);
         }
 
         if (empty($header['alg'])) {
-            throw new Exception('Empty algorithm', 401);
+            throw new \Exception('Empty algorithm', 401);
         }
 
         if (empty($this->algs[$header['alg']])) {
-            throw new Exception('Algorithm not supported', 401);
+            throw new \Exception('Algorithm not supported', 401);
         }
 
         if (!static::constantTimeEquals($alg, $header['alg'])) {
-            throw new Exception('Algorithm not allowed', 401);
+            throw new \Exception('Algorithm not allowed', 401);
         }
 
         if (!$this->verify("{$headb64}.{$bodyb64}", $sig, $key)) {
-            throw new Exception('Signature verification failed', 401);
+            throw new \Exception('Signature verification failed', 401);
         }
 
         if (isset($payload['nbf']) && $payload['nbf'] > ($timestamp + $this->leeway)) {
-            throw new Exception(
-                'Cannot handle token prior to ' . date(DateTime::ATOM, $payload['nbf']),
+            throw new \Exception(
+                'Cannot handle token prior to '.date(\DateTime::ATOM, $payload['nbf']),
                 401
             );
         }
 
         if (isset($payload['iat']) && $payload['iat'] > ($timestamp + $this->leeway)) {
-            throw new Exception(
-                'Cannot handle token prior to ' . date(DateTime::ATOM, $payload['iat']),
+            throw new \Exception(
+                'Cannot handle token prior to '.date(\DateTime::ATOM, $payload['iat']),
                 401
             );
         }
 
         if (isset($payload['exp']) && ($timestamp - $this->leeway) >= $payload['exp']) {
-            throw new Exception('Expired token', 401);
+            throw new \Exception('Expired token', 401);
         }
 
         return $payload;
@@ -151,28 +148,11 @@ class JWT
     {
         $alg = $alg ?? $this->alg;
         if (empty($this->algs[$alg])) {
-            throw new Exception('Algorithm not supported', 400);
+            throw new \Exception('Algorithm not supported', 400);
         }
         $algorithm = $this->algs[$alg];
+
         return hash_hmac($algorithm, $msg, $key, true);
-    }
-
-    private function verify(string $msg, string $signature, ?string $key = null, ?string $alg = null): bool
-    {
-        $key = $key ?? $this->key;
-        $alg = $alg ?? $this->alg;
-
-        if (empty($key)) {
-            throw new Exception('Invalid secret key', 400);
-        }
-
-        if (empty($this->algs[$alg])) {
-            throw new Exception('Algorithm not supported');
-        }
-
-        $algorithm = $this->algs[$alg];
-        $hash = hash_hmac($algorithm, $msg, $key, true);
-        return static::constantTimeEquals($hash, $signature);
     }
 
     public static function jsonDecode(string $input)
@@ -181,9 +161,10 @@ class JWT
 
         if ($errno = json_last_error()) {
             static::handleJsonError($errno);
-        } elseif ($obj === null && $input !== 'null') {
-            throw new Exception('Null result with non-null input');
+        } elseif (null === $obj && 'null' !== $input) {
+            throw new \Exception('Null result with non-null input');
         }
+
         return $obj;
     }
 
@@ -196,12 +177,13 @@ class JWT
         }
         if ($errno = json_last_error()) {
             static::handleJsonError($errno);
-        } elseif ($json === 'null' && $input !== null) {
-            throw new Exception('Null result with non-null input');
+        } elseif ('null' === $json && null !== $input) {
+            throw new \Exception('Null result with non-null input');
         }
-        if ($json === false) {
-            throw new Exception('Failed to encode JSON');
+        if (false === $json) {
+            throw new \Exception('Failed to encode JSON');
         }
+
         return $json;
     }
 
@@ -212,6 +194,7 @@ class JWT
             $padlen = 4 - $remainder;
             $input .= str_repeat('=', $padlen);
         }
+
         return base64_decode(strtr($input, '-_', '+/'));
     }
 
@@ -228,12 +211,31 @@ class JWT
         $len = min(static::safeStrlen($left), static::safeStrlen($right));
 
         $status = 0;
-        for ($i = 0; $i < $len; $i++) {
+        for ($i = 0; $i < $len; ++$i) {
             $status |= (ord($left[$i]) ^ ord($right[$i]));
         }
         $status |= (static::safeStrlen($left) ^ static::safeStrlen($right));
 
-        return ($status === 0);
+        return 0 === $status;
+    }
+
+    private function verify(string $msg, string $signature, ?string $key = null, ?string $alg = null): bool
+    {
+        $key = $key ?? $this->key;
+        $alg = $alg ?? $this->alg;
+
+        if (empty($key)) {
+            throw new \Exception('Invalid secret key', 400);
+        }
+
+        if (empty($this->algs[$alg])) {
+            throw new \Exception('Algorithm not supported');
+        }
+
+        $algorithm = $this->algs[$alg];
+        $hash = hash_hmac($algorithm, $msg, $key, true);
+
+        return static::constantTimeEquals($hash, $signature);
     }
 
     private static function handleJsonError(int $errno): void
@@ -243,13 +245,13 @@ class JWT
             JSON_ERROR_STATE_MISMATCH => 'Invalid or malformed JSON',
             JSON_ERROR_CTRL_CHAR => 'Unexpected control character found',
             JSON_ERROR_SYNTAX => 'Syntax error, malformed JSON',
-            JSON_ERROR_UTF8 => 'Malformed UTF-8 characters'
+            JSON_ERROR_UTF8 => 'Malformed UTF-8 characters',
         ];
 
-        throw new Exception(
+        throw new \Exception(
             isset($messages[$errno])
                 ? $messages[$errno]
-                : 'Unknown JSON error: ' . $errno,
+                : 'Unknown JSON error: '.$errno,
             $errno
         );
     }
@@ -259,6 +261,7 @@ class JWT
         if (function_exists('mb_strlen')) {
             return mb_strlen($str, '8bit');
         }
+
         return strlen($str);
     }
 }

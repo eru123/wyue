@@ -5,17 +5,17 @@ namespace Wyue;
 use DateTime;
 
 /**
- * Extended Contab Validator
+ * Extended Contab Validator.
  */
 final class Crontab
 {
     /**
-     * Check if expression matches datetime
+     * Check if expression matches datetime.
      */
-    final public static function match(string $expression, ?DateTime $datetime): bool
+    final public static function match(string $expression, ?\DateTime $datetime): bool
     {
         if (!$datetime) {
-            $datetime = new DateTime();
+            $datetime = new \DateTime();
         }
 
         $reserved = [
@@ -47,7 +47,7 @@ final class Crontab
 
         $ex = preg_replace('/\s+/', ' ', trim($expression));
         $ea = explode(' ', $ex);
-        $ea = array_filter($ea, fn($v) => $v !== '');
+        $ea = array_filter($ea, fn ($v) => '' !== $v);
 
         $dt_Y = (int) $datetime->format('Y');
         $dt_m = (int) $datetime->format('m');
@@ -56,61 +56,85 @@ final class Crontab
         $dt_i = (int) $datetime->format('i');
         $dt_s = (int) $datetime->format('s');
         $dt_w = (int) $datetime->format('N');
-        $dt_w = ($dt_w === 7 ? 1 : $dt_w + 1) - 1;
+        $dt_w = (7 === $dt_w ? 1 : $dt_w + 1) - 1;
         $dt_m_max = (int) $datetime->format('t');
 
-        $bmin = count($ea) === 5;
-        $bsec = count($ea) === 6;
-        $byear = count($ea) === 7;
+        $bmin = 5 === count($ea);
+        $bsec = 6 === count($ea);
+        $byear = 7 === count($ea);
 
         if (!$bsec && !$bmin && !$byear) {
-            return static::matchdate($expression, $datetime);
+            return self::matchdate($expression, $datetime);
         }
 
         if ($bmin) {
-            if (!static::pexc($ea[4], $dt_w, 0, 6))
+            if (!self::pexc($ea[4], $dt_w, 0, 6)) {
                 return false;
-            if (!static::pexc($ea[3], $dt_m, 1, 12))
+            }
+            if (!self::pexc($ea[3], $dt_m, 1, 12)) {
                 return false;
-            if (!static::pexc($ea[2], $dt_d, 1, $dt_m_max))
+            }
+            if (!self::pexc($ea[2], $dt_d, 1, $dt_m_max)) {
                 return false;
-            if (!static::pexc($ea[1], $dt_H, 0, 23))
+            }
+            if (!self::pexc($ea[1], $dt_H, 0, 23)) {
                 return false;
-            if (!static::pexc($ea[0], $dt_i, 0, 59))
+            }
+            if (!self::pexc($ea[0], $dt_i, 0, 59)) {
                 return false;
-            if ($dt_s !== 0)
+            }
+            if (0 !== $dt_s) {
                 return false;
+            }
+
             return true;
-        } else if ($bsec) {
-            if (!static::pexc($ea[5], $dt_w, 0, 6))
+        }
+        if ($bsec) {
+            if (!self::pexc($ea[5], $dt_w, 0, 6)) {
                 return false;
-            if (!static::pexc($ea[4], $dt_m, 1, 12))
+            }
+            if (!self::pexc($ea[4], $dt_m, 1, 12)) {
                 return false;
-            if (!static::pexc($ea[3], $dt_d, 1, $dt_m_max))
+            }
+            if (!self::pexc($ea[3], $dt_d, 1, $dt_m_max)) {
                 return false;
-            if (!static::pexc($ea[2], $dt_H, 0, 23))
+            }
+            if (!self::pexc($ea[2], $dt_H, 0, 23)) {
                 return false;
-            if (!static::pexc($ea[1], $dt_i, 0, 59))
+            }
+            if (!self::pexc($ea[1], $dt_i, 0, 59)) {
                 return false;
-            if (!static::pexc($ea[0], $dt_s, 0, 59))
+            }
+            if (!self::pexc($ea[0], $dt_s, 0, 59)) {
                 return false;
+            }
+
             return true;
-        } else if ($byear) {
+        }
+        if ($byear) {
             $cy = (int) date('Y');
-            if (!static::pexc($ea[6], $dt_Y, $cy, false))
+            if (!self::pexc($ea[6], $dt_Y, $cy, false)) {
                 return false;
-            if (!static::pexc($ea[5], $dt_w, 0, 6))
+            }
+            if (!self::pexc($ea[5], $dt_w, 0, 6)) {
                 return false;
-            if (!static::pexc($ea[4], $dt_m, 1, 12))
+            }
+            if (!self::pexc($ea[4], $dt_m, 1, 12)) {
                 return false;
-            if (!static::pexc($ea[3], $dt_d, 1, $dt_m_max))
+            }
+            if (!self::pexc($ea[3], $dt_d, 1, $dt_m_max)) {
                 return false;
-            if (!static::pexc($ea[2], $dt_H, 0, 23))
+            }
+            if (!self::pexc($ea[2], $dt_H, 0, 23)) {
                 return false;
-            if (!static::pexc($ea[1], $dt_i, 0, 59))
+            }
+            if (!self::pexc($ea[1], $dt_i, 0, 59)) {
                 return false;
-            if (!static::pexc($ea[0], $dt_s, 0, 59))
+            }
+            if (!self::pexc($ea[0], $dt_s, 0, 59)) {
                 return false;
+            }
+
             return true;
         }
 
@@ -118,29 +142,29 @@ final class Crontab
     }
 
     /**
-     * Evaludate date expression
+     * Evaludate date expression.
      */
-    private static function matchdate(string $date, DateTime $datetime): bool
+    private static function matchdate(string $date, \DateTime $datetime): bool
     {
         $allowed = [
             'Y-m-d H:i:s',
-            DateTime::ATOM,
-            DateTime::COOKIE,
-            DateTime::ISO8601,
-            DateTime::ISO8601_EXPANDED,
-            DateTime::RFC822,
-            DateTime::RFC850,
-            DateTime::RFC1036,
-            DateTime::RFC1123,
-            DateTime::RFC2822,
-            DateTime::RFC3339,
-            DateTime::RFC3339_EXTENDED,
-            DateTime::RSS,
-            DateTime::W3C,
+            \DateTime::ATOM,
+            \DateTime::COOKIE,
+            \DateTime::ISO8601,
+            \DateTime::ISO8601_EXPANDED,
+            \DateTime::RFC822,
+            \DateTime::RFC850,
+            \DateTime::RFC1036,
+            \DateTime::RFC1123,
+            \DateTime::RFC2822,
+            \DateTime::RFC3339,
+            \DateTime::RFC3339_EXTENDED,
+            \DateTime::RSS,
+            \DateTime::W3C,
         ];
 
         foreach ($allowed as $format) {
-            $dt = DateTime::createFromFormat($format, $date);
+            $dt = \DateTime::createFromFormat($format, $date);
             if ($dt && $dt->format($format) === $date) {
                 return $dt->getTimestamp() === $datetime->getTimestamp();
             }
@@ -149,63 +173,79 @@ final class Crontab
         return false;
     }
 
-
     /**
-     * Evaluate expression with comma separated values
+     * Evaluate expression with comma separated values.
      */
     private static function pexc(string $expression, int $value, int $min, int $max): bool
     {
         $exs = explode(',', $expression);
         foreach ($exs as $ex) {
-            if (static::pexr($ex, $value, $min, $max)) {
+            if (self::pexr($ex, $value, $min, $max)) {
                 return true;
             }
         }
+
         return false;
     }
 
     /**
-     * Evaluate expression
+     * Evaluate expression.
      */
     private static function pexr(string $expression, int $value, int $min, false|int $max): bool
     {
-        if ($expression === '*')
+        if ('*' === $expression) {
             return true;
+        }
         if (preg_match('/^\*\/(\d+)$/', $expression, $matches)) {
             $n = (int) $matches[1];
-            if ($n < 1)
+            if ($n < 1) {
                 return false;
-            if ($value % $n !== 0)
+            }
+            if (0 !== $value % $n) {
                 return false;
+            }
+
             return true;
         }
         if (preg_match('/^(\d+)$/', $expression, $matches)) {
             $n = (int) $matches[1];
-            if ($max === false && $n < $min)
+            if (false === $max && $n < $min) {
                 return false;
-            if ($max !== false && ($n < $min || $n > $max))
+            }
+            if (false !== $max && ($n < $min || $n > $max)) {
                 return false;
-            if ($n !== $value)
+            }
+            if ($n !== $value) {
                 return false;
+            }
+
             return true;
         }
         if (preg_match('/^(\d+)-(\d+)$/', $expression, $matches)) {
             $n1 = (int) $matches[1];
             $n2 = (int) $matches[2];
-            if ($max === false && $n1 < $min)
+            if (false === $max && $n1 < $min) {
                 return false;
-            if ($max !== false && ($n1 < $min || $n1 > $max))
+            }
+            if (false !== $max && ($n1 < $min || $n1 > $max)) {
                 return false;
-            if ($max === false && $n2 < $min)
+            }
+            if (false === $max && $n2 < $min) {
                 return false;
-            if ($max !== false && ($n2 < $min || $n2 > $max))
+            }
+            if (false !== $max && ($n2 < $min || $n2 > $max)) {
                 return false;
-            if ($n1 > $n2)
+            }
+            if ($n1 > $n2) {
                 return false;
-            if ($value < $n1 || $value > $n2)
+            }
+            if ($value < $n1 || $value > $n2) {
                 return false;
+            }
+
             return true;
         }
+
         return false;
     }
 }
