@@ -8,3 +8,4 @@ composer.phar
 # Ignore test files
 /.htaccess
 /index.php
+.php-cs-fixer.cache
