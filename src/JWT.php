@@ -17,14 +17,14 @@ class JWT
     public $key = null;
     public $alg = null;
 
-    public function __construct(string $key = null, string $alg = 'HS256', int $leeway = 0)
+    public function __construct(?string $key = null, string $alg = 'HS256', int $leeway = 0)
     {
         $this->key = $key;
         $this->alg = $alg;
         $this->leeway = $leeway;
     }
 
-    public function encode(array $payload, string $key = null, string $alg = null): string
+    public function encode(array $payload, ?string $key = null, ?string $alg = null): string
     {
         $key = $key ?? $this->key;
         $alg = $alg ?? $this->alg;
@@ -72,7 +72,7 @@ class JWT
         return implode('.', $segments);
     }
 
-    public function decode(string $jwt, string $key = null, string $alg = null): array
+    public function decode(string $jwt, ?string $key = null, ?string $alg = null): array
     {
         $key = $key ?? $this->key;
         $alg = $alg ?? $this->alg;
@@ -157,7 +157,7 @@ class JWT
         return hash_hmac($algorithm, $msg, $key, true);
     }
 
-    private function verify(string $msg, string $signature, string $key = null, string $alg = null): bool
+    private function verify(string $msg, string $signature, ?string $key = null, ?string $alg = null): bool
     {
         $key = $key ?? $this->key;
         $alg = $alg ?? $this->alg;

@@ -15,7 +15,7 @@ class Venv
      * @param mixed $default The default value to return if key not found
      * @return mixed
      */
-    public static function _get(array $array, string|array $key = null, $default = null)
+    public static function _get(array $array, string|array|null $key = null, $default = null)
     {
         if (is_array($key)) {
             foreach ($key as $k) {
@@ -196,7 +196,7 @@ class Venv
      * @param mixed $default The default value to return if key not found
      * @return mixed
      */
-    public static function get(string|array $key = null, $default = null)
+    public static function get(string|array|null $key = null, $default = null)
     {
         return self::_get(static::$venv, $key, $default);
     }

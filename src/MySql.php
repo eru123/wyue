@@ -63,7 +63,7 @@ class MySql
         }
     }
 
-    public static function array_get(array $array, string|array $key = null, $default = null)
+    public static function array_get(array $array, string|array|null $key = null, $default = null)
     {
         if (is_array($key)) {
             foreach ($key as $k) {
@@ -166,12 +166,12 @@ class MySql
         return static::array_get(static::$my_config, $key, $default);
     }
 
-    public static function getMigrationsPath(string $default = null)
+    public static function getMigrationsPath(?string $default = null)
     {
         return static::array_get(static::$my_config, ['migrations_path', 'migration_path', 'migrations', 'migration'], $default);
     }
 
-    public static function getSeedsPath(string $default = null)
+    public static function getSeedsPath(?string $default = null)
     {
         return static::array_get(static::$my_config, ['seeds_path', 'seed_path', 'seeders_path', 'seeder_path', 'seeder', 'seeds'], $default);
     }
@@ -261,7 +261,7 @@ class MySql
         return new static("({$sql})");
     }
 
-    public static function table(string|self $name, string $alias = null): static
+    public static function table(string|self $name, ?string $alias = null): static
     {
         $sql = static::select_table($name);
         if ($alias) {
