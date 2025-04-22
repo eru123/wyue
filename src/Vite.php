@@ -145,7 +145,7 @@ class Vite
             static::template();
         }
 
-        $tpl_data = $data + static::$arr_data + ['body' => implode('', static::$arr_body), 'head' => implode('', static::$arr_head), 'imports' => ''];
+        $tpl_data = $data + static::$arr_data + ['body' => implode('', static::$arr_body), 'head' => implode('', static::$arr_head)];
         $dev = in_array(static::$str_tpl_name, ['react', 'dev']);
 
         if (!isset($tpl_data['app_id'])) {
@@ -224,6 +224,11 @@ class Vite
                     $tpl_data['head'] .= '<link rel="modulepreload" as="script" href="' . $tpl_data['base_uri'] . '/' . $jsf . '">';
                 }
             }
+        }
+
+        if (isset($tpl_data['entry']) && is_array($tpl_data['entry'])) {
+            reset($tpl_data['entry']);
+            $tpl_data['entry'] = current($tpl_data['entry']);
         }
 
         $html = Format::template(
