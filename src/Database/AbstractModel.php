@@ -3,9 +3,10 @@
 namespace Wyue\Database;
 
 use Generator;
+use JsonSerializable;
 use Wyue\MySql;
 
-abstract class AbstractModel
+abstract class AbstractModel implements JsonSerializable
 {
     use MySqlTraits;
 
@@ -71,6 +72,16 @@ abstract class AbstractModel
     public function __toArray()
     {
         return $this->retract($this->data);
+    }
+
+    /**
+     * Convert to JSON.
+     *
+     * @return array
+     */
+    public function jsonSerialize(): array
+    {
+        return $this->__toArray();
     }
 
     /**
