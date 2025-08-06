@@ -4,7 +4,7 @@ namespace Wyue\Tools;
 
 class UrlShortener
 {
-    public static $chars = 'Js3KZjq5N9gkO8Ln6GVAPI-USuW4_XhEH1t0oadCMTfRxpmDivwrQ2clzYeFbBy7';
+    public static $chars = 'Js3KZjq5N9gkO8Ln6GVAPIUSuW4XhEH1t0oadCMTfRxpmDivwrQ2clzYeFbBy7_-';
 
     /**
      * Generates a base N encoded string from the current system time in nanoseconds.
@@ -136,7 +136,7 @@ class UrlShortener
         $N = strlen(self::$chars);
         $length = strlen($baseN);
         for ($i = 0; $i < $length; $i++) {
-            $num = $num * $N + strpos(self::chars, $baseN[$i]);
+            $num = $num * $N + strpos(static::$chars, $baseN[$i]);
         }
 
         if ($num > PHP_INT_MAX) {
